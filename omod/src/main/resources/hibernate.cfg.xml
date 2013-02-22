@@ -1,0 +1,28 @@
+<!DOCTYPE hibernate-configuration PUBLIC
+	"-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+	"http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
+ 
+<hibernate-configuration>
+	<session-factory>
+      <property name="connection.pool_size">1</property>
+      <property name="connection.username">test</property>
+      <property name="connection.password">test</property>
+      <property name="connection.driver_class">com.mysql.jdbc.Driver</property>
+      <property name="connection.url">jdbc:mysql://localhost:3306/openmrs?autoReconnect=true</property>
+      <property name="dialect">org.hibernate.dialect.MySQLDialect</property>
+      <property name="show_sql">true</property>
+      <property name="generate_statistics">true</property>
+      <property name="query.factory_class">org.hibernate.hql.classic.ClassicQueryTranslatorFactory</property>
+      <property name="cache.provider_class">org.hibernate.cache.NoCacheProvider</property>
+      <property name="cache.use_minimal_puts">false</property>
+      <property name="cache.use_query_cache">false</property>
+      <property name="order_updates">false</property>
+<!--
+      <property name="hbm2ddl.auto">create</property>
+-->
+ 
+      <mapping resource="com/user/persistence/hibernate/Person.hbm.xml"/>
+ 
+	</session-factory>
+</hibernate-configuration>
+
