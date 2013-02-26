@@ -88,7 +88,7 @@ public class PDMPPageController {
 		sb.append(sUrl);
 
 
- 		int indexURL = sb.lastIndexOf("href=");
+ 		int indexURL = sb.lastIndexOf("href=\"/people");
  		if (indexURL > 0) {
  			String sBeginUrl = sb.substring(indexURL + 6);
  			String sSecondUrl = sBeginUrl.substring(0, sBeginUrl.indexOf("\""));
