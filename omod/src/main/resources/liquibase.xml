@@ -16,4 +16,15 @@
     </insert>
   </changeSet>
 
+  <changeSet id="pdmp_query-2013-02-26-17:42" author="toby">
+    <addColumn tableName="pdmp_import">
+      <column name="id" type="int">
+        <constraints primaryKey="true" nullable="false" />
+      </column>
+    </addColumn>
+    <update tableName="pdmp_import">
+      <column name="id" value="1" />
+    </update>
+  </changeSet>
+
 </databaseChangeLog>
