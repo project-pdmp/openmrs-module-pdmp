@@ -1,0 +1,19 @@
+<?xml version="1.0" ?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog/1.9"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog/1.9 http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-1.9.xsd">
+
+  <changeSet id="pdmp_query-2013-02-26-14:25" author="toby">
+    <createTable tableName="pdmp_import">
+      <column name="pdmp_url" type="varchar(255)"/>
+      <column name="pdmp_uid" type="varchar(255)"/>
+      <column name="pdmp_pwd" type="varchar(255)"/>
+    </createTable>
+    <insert tableName="pdmp_import">
+      <column name="pdmp_url" value="http://localhost:3000/"/>
+      <column name="pdmp_uid" value="admin@pdmp.example.org"/>
+      <column name="pdmp_pwd" value="admin123"/>
+    </insert>
+  </changeSet>
+
+</databaseChangeLog>
