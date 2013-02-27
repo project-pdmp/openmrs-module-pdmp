@@ -47,14 +47,14 @@ import org.openmrs.module.pdmp_query.ConfigService;
  */
 @Controller
 public class PDMPPageController {
-	
+
 	protected final Log log = LogFactory.getLog(getClass());
 	protected String sPDMPUrl;
 	protected String sPDMPUserID;
 	protected String sPDMPPassword;
 	protected String sWorkerUrl;
 	protected String sWorkerType;
-	
+
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) {
             Config c = Context.getService(ConfigService.class).getConfig();
@@ -64,7 +64,6 @@ public class PDMPPageController {
 		String sUrl = null;
 		String sResponse = null;
 		String sType = null;
-//		String sPrescriptions = "";
 		StringBuilder sb = null;
 		Patient patient = Context.getPatientService().getPatient(patientId);
 		Person person = Context.getPersonService().getPerson(patient);
@@ -75,7 +74,7 @@ public class PDMPPageController {
 		String sBirthdate = "";
 		String sAddress = "";
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
-		
+
 		sGivenName = person.getGivenName();
 		sFamilyName = person.getFamilyName();
 		if (person.getGender().equalsIgnoreCase("F")) {
@@ -85,21 +84,12 @@ public class PDMPPageController {
 		}
 		sBirthdate = dateFormat.format(person.getBirthdate());
 		sAddress = person.getPersonAddress().getCityVillage();
-/*		address methods
-			.getCountry():  returns the country as a string
-			.getStateProvince(): returns the state or province as a string
-			.getCountyDistrict(): returns the county or district as a string
-			.getCityVillage(): returns the city or village as a string
-			.getNeighborhoodCell(): returns the neighborhood cell as a string
-			.getAddress1(): returns the street and number as a string
-*/
 
 		sb = new StringBuilder();
-		sResponse = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName + 
-				"&family=" + sFamilyName + "&gender=" + sGender + 
+		sResponse = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName +
+				"&family=" + sFamilyName + "&gender=" + sGender +
 				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
-		
-//		sUrl = XParseDoc(sResponse, "/feed/entry/link[@type='application/atom+xml']");
+
 		try
 		{
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
@@ -146,7 +136,7 @@ public class PDMPPageController {
 			{
 				log.error("DOM Exception", e.fillInStackTrace());
 			}
-	
+
 			sb.setLength(0);
 			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
 			sUrl = "";
@@ -169,7 +159,7 @@ public class PDMPPageController {
 			{
 				log.error("DOM Exception", e.fillInStackTrace());
 			}
-			
+
 			sb.setLength(0);
 			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
 			sUrl = "";
@@ -197,12 +187,12 @@ public class PDMPPageController {
 						Element ePrescriberName = (Element) nPrescriberName;
 						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
 						sResponse = sResponse + "<p><b>Prescriber:</b> ";
-						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++) 
+						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++)
 						{
 							sResponse = sResponse + nLPrescriberAttrs.item(countPrescriberAttrs).getTextContent();
 						}
 						sResponse = sResponse + "</p>\n";
-					
+
 						// Drug Information:
 						expr = xpath.compile("medicationInformation/code");
 						Node nMedicationCode = (Node) expr.evaluate(nMed, XPathConstants.NODE);
@@ -210,17 +200,17 @@ public class PDMPPageController {
 						String sDisplayName = eMedicationCode.getAttribute("displayName");
 						sResponse = sResponse + "<p><b>Drug:</b> " + sDisplayName;
 						sResponse = sResponse + "</p>\n";
-					
+
 						// Order Information
 						expr = xpath.compile("orderInformation/orderedDateTime");
 						Node nOrderedDateTime = (Node) expr.evaluate(nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<p><b>When written: </b>" + nOrderedDateTime.getTextContent() + "</p>\n";
-					
+
 						// Fullfillment Information
 						// Prescription Number
 						expr = xpath.compile("fulfillmentHistory/prescriptionNumber");
 						Node nPrescriptionNumber = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-						sResponse = sResponse + "<table border='1'><tr><th>Rx Number</th><th>When Filled</th><th>Pharmacy</th><th>Pharmacist</th><th>Quantity</th><th>Status</th></tr>"; 
+						sResponse = sResponse + "<table border='1'><tr><th>Rx Number</th><th>When Filled</th><th>Pharmacy</th><th>Pharmacist</th><th>Quantity</th><th>Status</th></tr>";
 						sResponse = sResponse + "<tr><td>" + nPrescriptionNumber.getTextContent() + "</td>\n";
 
 						// When Filled
@@ -232,14 +222,14 @@ public class PDMPPageController {
 						expr = xpath.compile("fulfillmentHistory/pharmacy/name");
 						Node nPharmacyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<td>" + nPharmacyName.getTextContent() + "</td>\n";
-					
+
 						// Pharmacist  Name
 						expr = xpath.compile("fulfillmentHistory/pharmacist/name/givenName");
 						Node nPharmacistGivenName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
 
 						expr = xpath.compile("fulfillmentHistory/pharmacist/name/familyName");
 						Node nPharmacistFamilyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-					
+
 						sResponse = sResponse + "<td>" + nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent() + "</td>\n";
 
 						// Quantity
@@ -264,7 +254,7 @@ public class PDMPPageController {
 				log.error("DOM Exception", e.fillInStackTrace());
 			}
 		}
-		
+
 		model.addAttribute("subsection", sResponse);
 
 	}
@@ -283,11 +273,11 @@ public class PDMPPageController {
 
 			//set up out communications stuff
 			connection = null;
-			
+
 			//Set up the initial connection
 			connection = (HttpURLConnection)serverAddress.openConnection();
 			connection.setRequestMethod("GET");
-			
+
 			byte[] authEncBytes = Base64.encodeBase64(userpassword.getBytes());
 			String encodedAuthorization = new String(authEncBytes);
 			connection.setRequestProperty("Authorization", "Basic "+
@@ -305,9 +295,9 @@ public class PDMPPageController {
 			{
 				sb.append(line + '\n');
 			}
-			
+
 			output = sb.toString();
-			
+
 			return output;
 		}
 		catch (MalformedURLException e) {
@@ -331,7 +321,7 @@ public class PDMPPageController {
 			connection = null;
 		}
 	}
-	
+
 	public static int nthIndexOf(String source, String sought, int n) {
 	    int index = source.indexOf(sought);
 	    if (index == -1) return -1;
@@ -342,7 +332,7 @@ public class PDMPPageController {
 	    }
 	    return index;
 	}
-	
+
 	public static Document loadXMLFromString(String xml) throws Exception
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
@@ -350,7 +340,7 @@ public class PDMPPageController {
         InputStream is = new ByteArrayInputStream(xml.getBytes());
         return builder.parse(is);
     }
-	
+
 	protected String XParseDoc(String sResponse, String expression)
 	{
 		try
