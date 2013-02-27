@@ -79,9 +79,9 @@ public class PDMPPageController {
 		sBirthdate = dateFormat.format(person.getBirthdate());
 		sAddress = person.getPersonAddress().getCityVillage();
 
-		Document doc = PDMPGet(baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName +
+		Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
 				"&family=" + sFamilyName + "&gender=" + sGender +
-				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
+				"&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml");
                 {
 			XPath xpath = xPathfactory.newXPath();
 			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
