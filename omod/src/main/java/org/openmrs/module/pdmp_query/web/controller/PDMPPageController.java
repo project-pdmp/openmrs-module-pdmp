@@ -13,7 +13,6 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
-import java.util.Properties;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -25,13 +24,6 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.hibernate.cfg.Configuration;
-import org.hibernate.Hibernate;
-import org.hibernate.HibernateException;
-import org.hibernate.Query;
-import org.hibernate.Session;
-import org.hibernate.SessionFactory;
-import org.hibernate.util.ConfigHelper;
 import org.openmrs.api.context.Context;
 import org.openmrs.Patient;
 import org.openmrs.Person;
@@ -45,6 +37,10 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+
+import org.openmrs.module.pdmp_query.Config;
+import org.openmrs.module.pdmp_query.ConfigService;
+
 
 /**
  * The main controller.
@@ -61,9 +57,9 @@ public class PDMPPageController {
 	
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) {
-		fetchPDMPProperties();
-		String userpassword = sPDMPUserID + ":" + sPDMPPassword;
-		String baseURL = sPDMPUrl; 
+            Config c = Context.getService(ConfigService.class).getConfig();
+            String userpassword = c.getUser() + ":" + c.getPassword();
+            String baseURL = c.getUrl();
 		String sNoRecordsFound = "No PDMP Records Found";
 		String sUrl = null;
 		String sResponse = null;
@@ -334,38 +330,6 @@ public class PDMPPageController {
 			wr = null;
 			connection = null;
 		}
-	}
-	
-	public void fetchPDMPProperties()
-	{
-		Configuration config = new Configuration();
-		
-		// load in the default hibernate properties
-		try {
-			InputStream propertyStream = ConfigHelper.getResourceAsStream("/hibernate.default.properties");
-			Properties props = new Properties();
-			OpenmrsUtil.loadProperties(props, propertyStream);
-			propertyStream.close();
-			
-			// Only load in the default properties if they don't exist
-			config.mergeProperties(props);
-		}
-		catch (IOException e) {
-			log.fatal("Unable to load default hibernate properties", e);
-		}
-
-		SessionFactory sessionFactory = config.configure().buildSessionFactory();
-		Session session = sessionFactory.openSession();
-		
-		Query pdmpQuery = session.createSQLQuery("select pdmp_url, pdmp_uid, pdmp_pwd from pdmp_import")
-				.addScalar("pdmp_url", Hibernate.STRING)
-				.addScalar("pdmp_uid", Hibernate.STRING)
-				.addScalar("pdmp_pwd", Hibernate.STRING);
-		Object [] pdmpImport = (Object []) pdmpQuery.uniqueResult(); 
-		sPDMPUrl = (String) pdmpImport[0];
-		sPDMPUserID = (String) pdmpImport[1];
-		sPDMPPassword = (String) pdmpImport[2];
-		session.close();
 	}
 	
 	public static int nthIndexOf(String source, String sought, int n) {

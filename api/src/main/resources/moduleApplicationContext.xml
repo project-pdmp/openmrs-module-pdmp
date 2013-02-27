@@ -1,32 +1,75 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <beans xmlns="http://www.springframework.org/schema/beans"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
-	xmlns:context="http://www.springframework.org/schema/context"
-	xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
-	xmlns:aop="http://www.springframework.org/schema/aop" xmlns:util="http://www.springframework.org/schema/util"
-	xsi:schemaLocation="http://www.springframework.org/schema/beans
-  		    http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
-  		    http://www.springframework.org/schema/context
-  		    http://www.springframework.org/schema/context/spring-context-3.0.xsd
-  		    http://www.springframework.org/schema/jee
-  		    http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
-  		    http://www.springframework.org/schema/tx
-  		    http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
-  		    http://www.springframework.org/schema/aop
-  		    http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
-  		    http://www.springframework.org/schema/util
-  		    http://www.springframework.org/schema/util/spring-util-3.0.xsd">
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:p="http://www.springframework.org/schema/p"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:jee="http://www.springframework.org/schema/jee" xmlns:tx="http://www.springframework.org/schema/tx"
+       xmlns:aop="http://www.springframework.org/schema/aop" xmlns:util="http://www.springframework.org/schema/util"
+       xsi:schemaLocation="http://www.springframework.org/schema/beans
+  		           http://www.springframework.org/schema/beans/spring-beans-3.0.xsd
+  		           http://www.springframework.org/schema/context
+  		           http://www.springframework.org/schema/context/spring-context-3.0.xsd
+  		           http://www.springframework.org/schema/jee
+  		           http://www.springframework.org/schema/jee/spring-jee-3.0.xsd
+  		           http://www.springframework.org/schema/tx
+  		           http://www.springframework.org/schema/tx/spring-tx-3.0.xsd
+  		           http://www.springframework.org/schema/aop
+  		           http://www.springframework.org/schema/aop/spring-aop-3.0.xsd
+  		           http://www.springframework.org/schema/util
+  		           http://www.springframework.org/schema/util/spring-util-3.0.xsd">
 
-	<!-- Add here beans related to the API context -->
-	<bean id="pdmpUrlMapping" 
-		  class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
-		<property name="mappings">
-			<props>
-				<prop key="*/WEB-INF/view/module/pdmp_query/portlets/pdmp.jsp">PDMPPageController</prop>
-			</props>
-		</property>
+  <!-- Add here beans related to the API context -->
+  <bean id="pdmpUrlMapping"
+	class="org.springframework.web.servlet.handler.SimpleUrlHandlerMapping">
+    <property name="mappings">
+      <props>
+	<prop key="*/WEB-INF/view/module/pdmp_query/portlets/pdmp.jsp">PDMPPageController</prop>
+      </props>
+    </property>
+  </bean>
+
+  <bean id="PDMPPageController"
+	class="org.openmrs.module.pdmp_query.web.controller.PDMPPageController"/>
+
+
+  <!-- Create the service so objects can be saved to the database -->
+  <!-- This summons the "serviceContext" bean created in the core openmrs applicationContext-service.xml file. -->
+  <bean parent="serviceContext">
+
+    <!-- This adds your service to the list of moduleServices on the core ServiceContext in openmrs -->
+    <property name="moduleService">
+      <list>
+	<!-- must be a full path to your service __interface__ -->
+	<value>org.openmrs.module.pdmp_query.ConfigService</value>
+
+	<!-- This is required stuff for transactions to work correctly -->
+	<bean class="org.springframework.transaction.interceptor.TransactionProxyFactoryBean">
+	  <property name="transactionManager"><ref bean="transactionManager"/></property> <!-- more req stuff -->
+	  <property name="target">
+
+	    <!-- Your implementation of your service interface -->
+	    <bean class="org.openmrs.module.pdmp_query.impl.ConfigServiceImpl">
+	      <!-- The attribute on your impl that needs to be set -->
+	      <property name="serviceDao">
+		<!-- The implementation of the dao you want to user -->
+		<bean class="org.openmrs.module.pdmp_query.db.hibernate.HibernateServiceDAO">
+		  <!-- set the attribute so the dao so hibernate can read/write to the db -->
+		  <!-- This bean is defined in the parent spring applicationContext-service.xml that is defined in core openmrs -->
+		  <property name="sessionFactory"><ref bean="sessionFactory"/></property>
+		</bean>
+	      </property>
+	    </bean>
+	  </property>
+	  <property name="preInterceptors">
+	    <list>
+	      <ref bean="authorizationInterceptor"/>
+	    </list>
+	  </property>
+	  <property name="transactionAttributeSource">
+	    <bean class="org.springframework.transaction.annotation.AnnotationTransactionAttributeSource"/>
+	  </property>
 	</bean>
-	
-	<bean id="PDMPPageController"
-		  class="org.openmrs.module.pdmp_query.web.controller.PDMPPageController"/>
+      </list>
+    </property>
+  </bean>
+
 </beans>
