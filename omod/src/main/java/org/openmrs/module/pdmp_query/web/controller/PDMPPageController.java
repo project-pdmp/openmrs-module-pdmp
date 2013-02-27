@@ -60,6 +60,7 @@ public class PDMPPageController {
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
+            XPathFactory xPathfactory = XPathFactory.newInstance();
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
@@ -93,10 +94,7 @@ public class PDMPPageController {
 				"&family=" + sFamilyName + "&gender=" + sGender +
 				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
                 {
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = loadXMLFromString(sResponse);
-			XPathFactory xPathfactory = XPathFactory.newInstance();
 			XPath xpath = xPathfactory.newXPath();
 			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
 			Node nPeople = (Node) expr.evaluate(doc, XPathConstants.NODE);
@@ -117,10 +115,7 @@ public class PDMPPageController {
 			sType = "";
 
 			{
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = loadXMLFromString(sResponse);
-				XPathFactory xPathfactory = XPathFactory.newInstance();
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
 				Node nPeopleSRPP = (Node) expr.evaluate(doc, XPathConstants.NODE);
@@ -135,10 +130,7 @@ public class PDMPPageController {
 			sType = "";
 
 			{
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = loadXMLFromString(sResponse);
-				XPathFactory xPathfactory = XPathFactory.newInstance();
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@rel='report']");
 				Node nPeopleSRPPReport = (Node) expr.evaluate(doc, XPathConstants.NODE);
@@ -153,10 +145,7 @@ public class PDMPPageController {
 			sType = "";
 
 			{
-				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 				Document doc = loadXMLFromString(sResponse);
-				XPathFactory xPathfactory = XPathFactory.newInstance();
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/record/medicationOrder");
 				NodeList nLPeopleMedication = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
