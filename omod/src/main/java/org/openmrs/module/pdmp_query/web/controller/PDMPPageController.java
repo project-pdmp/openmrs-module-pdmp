@@ -273,17 +273,6 @@ public class PDMPPageController {
 		}
 	}
 
-	public static int nthIndexOf(String source, String sought, int n) {
-	    int index = source.indexOf(sought);
-	    if (index == -1) return -1;
-
-	    for (int i = 1; i < n; i++) {
-	        index = source.indexOf(sought, index + 1);
-	        if (index == -1) return -1;
-	    }
-	    return index;
-	}
-
     public static Document loadXMLFromString(String xml) throws ParserConfigurationException, SAXException, IOException
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
