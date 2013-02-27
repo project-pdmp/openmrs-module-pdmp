@@ -16,9 +16,11 @@ import java.text.SimpleDateFormat;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
 import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
@@ -37,6 +39,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.SAXException;
 
 import org.openmrs.module.pdmp_query.Config;
 import org.openmrs.module.pdmp_query.ConfigService;
@@ -56,7 +59,7 @@ public class PDMPPageController {
 	protected String sWorkerType;
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
-	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) {
+	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
@@ -89,9 +92,7 @@ public class PDMPPageController {
 		sResponse = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName +
 				"&family=" + sFamilyName + "&gender=" + sGender +
 				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
-
-		try
-		{
+                {
 			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
 			Document doc = loadXMLFromString(sResponse);
@@ -102,11 +103,7 @@ public class PDMPPageController {
 			Element hPeople = (Element) nPeople;
 			sUrl = baseURL + hPeople.getAttribute("href");
 			sType = hPeople.getAttribute("type");
-		}
-		catch (Exception e)
-		{
-			log.error("DOM Exception", e.fillInStackTrace());
-		}
+                }
 
 		if (sType == null)
 		{
@@ -119,7 +116,6 @@ public class PDMPPageController {
 			sUrl = "";
 			sType = "";
 
-			try
 			{
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -132,17 +128,12 @@ public class PDMPPageController {
 				sUrl = baseURL + hPeopleSRPP.getAttribute("href");
 				sType = hPeopleSRPP.getAttribute("type");
 			}
-			catch (Exception e)
-			{
-				log.error("DOM Exception", e.fillInStackTrace());
-			}
 
 			sb.setLength(0);
 			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
 			sUrl = "";
 			sType = "";
 
-			try
 			{
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -155,17 +146,12 @@ public class PDMPPageController {
 				sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
 				sType = hPeopleSRPPReport.getAttribute("type");
 			}
-			catch (Exception e)
-			{
-				log.error("DOM Exception", e.fillInStackTrace());
-			}
 
 			sb.setLength(0);
 			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
 			sUrl = "";
 			sType = "";
 
-			try
 			{
 				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
 				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
@@ -249,17 +235,13 @@ public class PDMPPageController {
 					}
 				}
 			}
-			catch (Exception e)
-			{
-				log.error("DOM Exception", e.fillInStackTrace());
-			}
 		}
 
 		model.addAttribute("subsection", sResponse);
 
 	}
 
-	public String PDMPGet(StringBuilder sb, ModelMap model, String sURL, String userpassword, String hProp, String hPropVal)
+	public String PDMPGet(StringBuilder sb, ModelMap model, String sURL, String userpassword, String hProp, String hPropVal) throws IOException
 	{
 		HttpURLConnection connection = null;
 		OutputStreamWriter wr = null;
@@ -300,19 +282,6 @@ public class PDMPPageController {
 
 			return output;
 		}
-		catch (MalformedURLException e) {
-			e.printStackTrace();
-			return "Malformed URL Error! " + sURL;
-		}
-		catch (ProtocolException e) {
-			e.printStackTrace();
-			return "Protocol Error! " + sURL;
-		}
-		catch (IOException e) {
-			e.printStackTrace();
-			log.error("IOException", e.fillInStackTrace());
-			return "IO Error! " + sURL;
-		}
 		finally	{
 			//close the connection, set all objects to null
 			connection.disconnect();
@@ -333,7 +302,7 @@ public class PDMPPageController {
 	    return index;
 	}
 
-	public static Document loadXMLFromString(String xml) throws Exception
+    public static Document loadXMLFromString(String xml) throws ParserConfigurationException, SAXException, IOException
     {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         DocumentBuilder builder = factory.newDocumentBuilder();
@@ -342,4 +311,3 @@ public class PDMPPageController {
     }
 
 }
-
