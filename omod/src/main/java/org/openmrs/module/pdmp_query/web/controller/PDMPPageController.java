@@ -341,26 +341,5 @@ public class PDMPPageController {
         return builder.parse(is);
     }
 
-	protected String XParseDoc(String sResponse, String expression)
-	{
-		try
-		{
-			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
-			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-			Document doc = loadXMLFromString(sResponse);
-			XPathFactory xPathfactory = XPathFactory.newInstance();
-			XPath xpath = xPathfactory.newXPath();
-			XPathExpression expr = xpath.compile(expression);
-			Node nNode = (Node) expr.evaluate(doc, XPathConstants.NODE);
-			Element hNode = (Element) nNode;
-			sWorkerUrl = sPDMPUrl + hNode.getAttribute("href");
-			sWorkerType = hNode.getAttribute("type");
-		}
-		catch (Exception e)
-		{
-			log.error("DOM Exception", e.fillInStackTrace());
-		}
-		return sWorkerType;
-	}
-
 }
+
