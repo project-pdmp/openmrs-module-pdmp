@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC
+"-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd" >
+
+<!-- This file must be listed in the /metadata/config.xml file in the mappingFiles element -->
+
+<hibernate-mapping package="org.openmrs.module.pdmp_query">
+
+<class name="Config" table="pdmp_import">
+
+  <id name="id" type="integer" column="id" unsaved-value="0">
+    <generator class="native" />
+  </id>
+
+  <property name="url" type="string"  column="pdmp_url" />
+  <property name="user" type="string" column="pdmp_uid" />
+  <property name="password" type="string"  column="pdmp_pwd" />
+
+</class>
+</hibernate-mapping>

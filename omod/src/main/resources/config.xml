@@ -34,7 +34,7 @@
 
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
-		hibernate.cfg.xml
+		Config.hbm.xml
 	</mappingFiles>
 
 	<!-- Internationalization -->
