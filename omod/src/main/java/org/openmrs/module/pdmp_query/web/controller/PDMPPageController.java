@@ -97,8 +97,7 @@ public class PDMPPageController {
 			Document doc = loadXMLFromString(sResponse);
 			XPath xpath = xPathfactory.newXPath();
 			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
-			Node nPeople = (Node) expr.evaluate(doc, XPathConstants.NODE);
-			Element hPeople = (Element) nPeople;
+			Element hPeople = (Element) expr.evaluate(doc, XPathConstants.NODE);
 			sUrl = baseURL + hPeople.getAttribute("href");
 			sType = hPeople.getAttribute("type");
                 }
@@ -118,8 +117,7 @@ public class PDMPPageController {
 				Document doc = loadXMLFromString(sResponse);
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
-				Node nPeopleSRPP = (Node) expr.evaluate(doc, XPathConstants.NODE);
-				Element hPeopleSRPP = (Element) nPeopleSRPP;
+				Element hPeopleSRPP = (Element) expr.evaluate(doc, XPathConstants.NODE);
 				sUrl = baseURL + hPeopleSRPP.getAttribute("href");
 				sType = hPeopleSRPP.getAttribute("type");
 			}
@@ -133,8 +131,7 @@ public class PDMPPageController {
 				Document doc = loadXMLFromString(sResponse);
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@rel='report']");
-				Node nPeopleSRPPReport = (Node) expr.evaluate(doc, XPathConstants.NODE);
-				Element hPeopleSRPPReport = (Element) nPeopleSRPPReport;
+				Element hPeopleSRPPReport = (Element) expr.evaluate(doc, XPathConstants.NODE);
 				sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
 				sType = hPeopleSRPPReport.getAttribute("type");
 			}
@@ -158,8 +155,7 @@ public class PDMPPageController {
 
 						// Prescriber Information
 						expr = xpath.compile("orderInformation/prescriber/name");
-						Node nPrescriberName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-						Element ePrescriberName = (Element) nPrescriberName;
+						Element ePrescriberName = (Element) expr.evaluate(nMed, XPathConstants.NODE);
 						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
 						sResponse = sResponse + "<p><b>Prescriber:</b> ";
 						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++)
@@ -170,8 +166,7 @@ public class PDMPPageController {
 
 						// Drug Information:
 						expr = xpath.compile("medicationInformation/code");
-						Node nMedicationCode = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-						Element eMedicationCode = (Element) nMedicationCode;
+						Element eMedicationCode = (Element) expr.evaluate(nMed, XPathConstants.NODE);
 						String sDisplayName = eMedicationCode.getAttribute("displayName");
 						sResponse = sResponse + "<p><b>Drug:</b> " + sDisplayName;
 						sResponse = sResponse + "</p>\n";
@@ -209,15 +204,13 @@ public class PDMPPageController {
 
 						// Quantity
 						expr = xpath.compile("fulfillmentHistory/quantityDispensed");
-						Node nQuantity = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-						Element eQuantity = (Element) nQuantity;
+						Element eQuantity = (Element) expr.evaluate(nMed, XPathConstants.NODE);
 						String sQuantity = eQuantity.getAttribute("amount");
 						sResponse = sResponse + "<td>" + sQuantity + "</td>\n";
 
 						// Status
 						expr = xpath.compile("fulfillmentHistory");
-						Node nStatus = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-						Element eStatus = (Element) nStatus;
+						Element eStatus = (Element) expr.evaluate(nMed, XPathConstants.NODE);
 						String sStatus = eStatus.getAttribute("fillStatus");
 						sResponse = sResponse + "<td>" + sStatus + "</td></tr></table>\n<HR/>";
 
