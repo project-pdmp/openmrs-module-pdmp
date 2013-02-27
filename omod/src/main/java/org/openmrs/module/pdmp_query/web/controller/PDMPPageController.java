@@ -6,7 +6,6 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
@@ -52,11 +51,6 @@ import org.openmrs.module.pdmp_query.ConfigService;
 public class PDMPPageController {
 
 	protected final Log log = LogFactory.getLog(getClass());
-	protected String sPDMPUrl;
-	protected String sPDMPUserID;
-	protected String sPDMPPassword;
-	protected String sWorkerUrl;
-	protected String sWorkerType;
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
@@ -226,7 +220,6 @@ public class PDMPPageController {
 	public String PDMPGet(StringBuilder sb, ModelMap model, String sURL, String userpassword, String hProp, String hPropVal) throws IOException
 	{
 		HttpURLConnection connection = null;
-		OutputStreamWriter wr = null;
 		BufferedReader rd  = null;
 		String line = null;
 		String output = null;
@@ -268,7 +261,6 @@ public class PDMPPageController {
 			//close the connection, set all objects to null
 			connection.disconnect();
 			rd = null;
-			wr = null;
 			connection = null;
 		}
 	}
