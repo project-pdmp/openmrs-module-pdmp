@@ -62,7 +62,6 @@ public class PDMPPageController {
 		String sUrl = null;
 		String sResponse = null;
 		String sType = null;
-		StringBuilder sb = null;
 		Patient patient = Context.getPatientService().getPatient(patientId);
 		Person person = Context.getPersonService().getPerson(patient);
 
@@ -83,12 +82,10 @@ public class PDMPPageController {
 		sBirthdate = dateFormat.format(person.getBirthdate());
 		sAddress = person.getPersonAddress().getCityVillage();
 
-		sb = new StringBuilder();
-		sResponse = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName +
+		Document doc = PDMPGet(baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName +
 				"&family=" + sFamilyName + "&gender=" + sGender +
 				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
                 {
-			Document doc = loadXMLFromString(sResponse);
 			XPath xpath = xPathfactory.newXPath();
 			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
 			Element hPeople = (Element) expr.evaluate(doc, XPathConstants.NODE);
@@ -102,13 +99,8 @@ public class PDMPPageController {
 		}
 		else
 		{
-			sb.setLength(0);
-			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
-			sUrl = "";
-			sType = "";
-
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
 			{
-				Document doc = loadXMLFromString(sResponse);
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
 				Element hPeopleSRPP = (Element) expr.evaluate(doc, XPathConstants.NODE);
@@ -116,13 +108,8 @@ public class PDMPPageController {
 				sType = hPeopleSRPP.getAttribute("type");
 			}
 
-			sb.setLength(0);
-			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
-			sUrl = "";
-			sType = "";
-
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
 			{
-				Document doc = loadXMLFromString(sResponse);
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/feed/entry/link[@rel='report']");
 				Element hPeopleSRPPReport = (Element) expr.evaluate(doc, XPathConstants.NODE);
@@ -130,13 +117,8 @@ public class PDMPPageController {
 				sType = hPeopleSRPPReport.getAttribute("type");
 			}
 
-			sb.setLength(0);
-			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
-			sUrl = "";
-			sType = "";
-
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
 			{
-				Document doc = loadXMLFromString(sResponse);
 				XPath xpath = xPathfactory.newXPath();
 				XPathExpression expr = xpath.compile("/record/medicationOrder");
 				NodeList nLPeopleMedication = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
@@ -217,19 +199,13 @@ public class PDMPPageController {
 
 	}
 
-	public String PDMPGet(StringBuilder sb, ModelMap model, String sURL, String userpassword, String hProp, String hPropVal) throws IOException
+    private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal) throws IOException, ParserConfigurationException, SAXException
 	{
 		HttpURLConnection connection = null;
-		BufferedReader rd  = null;
-		String line = null;
-		String output = null;
 		URL serverAddress = null;
 
 		try {
 			serverAddress = new URL(sURL);
-
-			//set up out communications stuff
-			connection = null;
 
 			//Set up the initial connection
 			connection = (HttpURLConnection)serverAddress.openConnection();
@@ -246,31 +222,12 @@ public class PDMPPageController {
 			connection.setReadTimeout(10000);
 			connection.connect();
 
-			rd  = new BufferedReader(new InputStreamReader(connection.getInputStream()));
-
-			while ((line = rd.readLine()) != null)
-			{
-				sb.append(line + '\n');
-			}
-
-			output = sb.toString();
-
-			return output;
+                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                        DocumentBuilder builder = factory.newDocumentBuilder();
+                        return builder.parse(connection.getInputStream());
 		}
 		finally	{
-			//close the connection, set all objects to null
 			connection.disconnect();
-			rd = null;
-			connection = null;
 		}
 	}
-
-    public static Document loadXMLFromString(String xml) throws ParserConfigurationException, SAXException, IOException
-    {
-        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        DocumentBuilder builder = factory.newDocumentBuilder();
-        InputStream is = new ByteArrayInputStream(xml.getBytes());
-        return builder.parse(is);
-    }
-
 }
