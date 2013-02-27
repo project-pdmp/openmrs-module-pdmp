@@ -2,6 +2,7 @@ package org.openmrs.module.pdmp_query.web.controller;
 
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -13,6 +14,13 @@ import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Properties;
+
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.xpath.XPath;
+import javax.xml.xpath.XPathConstants;
+import javax.xml.xpath.XPathExpression;
+import javax.xml.xpath.XPathFactory;
 
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
@@ -33,6 +41,10 @@ import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 /**
  * The main controller.
@@ -44,6 +56,8 @@ public class PDMPPageController {
 	protected String sPDMPUrl;
 	protected String sPDMPUserID;
 	protected String sPDMPPassword;
+	protected String sWorkerUrl;
+	protected String sWorkerType;
 	
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) {
@@ -52,6 +66,9 @@ public class PDMPPageController {
 		String baseURL = sPDMPUrl; 
 		String sNoRecordsFound = "No PDMP Records Found";
 		String sUrl = null;
+		String sResponse = null;
+		String sType = null;
+//		String sPrescriptions = "";
 		StringBuilder sb = null;
 		Patient patient = Context.getPatientService().getPatient(patientId);
 		Person person = Context.getPersonService().getPerson(patient);
@@ -82,89 +99,177 @@ public class PDMPPageController {
 */
 
 		sb = new StringBuilder();
-		sUrl = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName + 
+		sResponse = PDMPGet(sb, model, baseURL + "search?utf8=%E2%9C%93&given=" + sGivenName + 
 				"&family=" + sFamilyName + "&gender=" + sGender + 
-				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, null, null);
-		sb.append(sUrl);
+				"&loc=" + sAddress + "&dob=" + sBirthdate + "&commit=Search", userpassword, "Accept", "application/atom+xml");
+		
+//		sUrl = XParseDoc(sResponse, "/feed/entry/link[@type='application/atom+xml']");
+		try
+		{
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = loadXMLFromString(sResponse);
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
+			Node nPeople = (Node) expr.evaluate(doc, XPathConstants.NODE);
+			Element hPeople = (Element) nPeople;
+			sUrl = baseURL + hPeople.getAttribute("href");
+			sType = hPeople.getAttribute("type");
+		}
+		catch (Exception e)
+		{
+			log.error("DOM Exception", e.fillInStackTrace());
+		}
 
+		if (sType == null)
+		{
+			sResponse = "No PDMP Records found.";
+		}
+		else
+		{
+			sb.setLength(0);
+			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
+			sUrl = "";
+			sType = "";
 
- 		int indexURL = sb.lastIndexOf("href=\"/people");
- 		if (indexURL > 0) {
- 			String sBeginUrl = sb.substring(indexURL + 6);
- 			String sSecondUrl = sBeginUrl.substring(0, sBeginUrl.indexOf("\""));
+			try
+			{
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = loadXMLFromString(sResponse);
+				XPathFactory xPathfactory = XPathFactory.newInstance();
+				XPath xpath = xPathfactory.newXPath();
+				XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
+				Node nPeopleSRPP = (Node) expr.evaluate(doc, XPathConstants.NODE);
+				Element hPeopleSRPP = (Element) nPeopleSRPP;
+				sUrl = baseURL + hPeopleSRPP.getAttribute("href");
+				sType = hPeopleSRPP.getAttribute("type");
+			}
+			catch (Exception e)
+			{
+				log.error("DOM Exception", e.fillInStackTrace());
+			}
+	
+			sb.setLength(0);
+			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
+			sUrl = "";
+			sType = "";
 
-			// second call to server
- 			sb.setLength(0);
- 			sUrl = PDMPGet(sb, model, baseURL + sSecondUrl, userpassword, "Accept", "application/atom+xml");
+			try
+			{
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = loadXMLFromString(sResponse);
+				XPathFactory xPathfactory = XPathFactory.newInstance();
+				XPath xpath = xPathfactory.newXPath();
+				XPathExpression expr = xpath.compile("/feed/entry/link[@rel='report']");
+				Node nPeopleSRPPReport = (Node) expr.evaluate(doc, XPathConstants.NODE);
+				Element hPeopleSRPPReport = (Element) nPeopleSRPPReport;
+				sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
+				sType = hPeopleSRPPReport.getAttribute("type");
+			}
+			catch (Exception e)
+			{
+				log.error("DOM Exception", e.fillInStackTrace());
+			}
+			
+			sb.setLength(0);
+			sResponse = PDMPGet(sb, model, sUrl, userpassword, "Accept", sType);
+			sUrl = "";
+			sType = "";
 
-			// end second call
+			try
+			{
+				DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+				DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+				Document doc = loadXMLFromString(sResponse);
+				XPathFactory xPathfactory = XPathFactory.newInstance();
+				XPath xpath = xPathfactory.newXPath();
+				XPathExpression expr = xpath.compile("/record/medicationOrder");
+				NodeList nLPeopleMedication = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+				if (nLPeopleMedication.getLength() > 0)
+				{
+					sResponse = "";
+					for (int countMeds = 0; countMeds < nLPeopleMedication.getLength(); countMeds++)
+					{
+						Node nMed = nLPeopleMedication.item(countMeds);
 
- 			sb.setLength(0);
- 			sb.append(sUrl);
+						// Prescriber Information
+						expr = xpath.compile("orderInformation/prescriber/name");
+						Node nPrescriberName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Element ePrescriberName = (Element) nPrescriberName;
+						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
+						sResponse = sResponse + "<p><b>Prescriber:</b> ";
+						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++) 
+						{
+							sResponse = sResponse + nLPrescriberAttrs.item(countPrescriberAttrs).getTextContent();
+						}
+						sResponse = sResponse + "</p>\n";
+					
+						// Drug Information:
+						expr = xpath.compile("medicationInformation/code");
+						Node nMedicationCode = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eMedicationCode = (Element) nMedicationCode;
+						String sDisplayName = eMedicationCode.getAttribute("displayName");
+						sResponse = sResponse + "<p><b>Drug:</b> " + sDisplayName;
+						sResponse = sResponse + "</p>\n";
+					
+						// Order Information
+						expr = xpath.compile("orderInformation/orderedDateTime");
+						Node nOrderedDateTime = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						sResponse = sResponse + "<p><b>When written: </b>" + nOrderedDateTime.getTextContent() + "</p>\n";
+					
+						// Fullfillment Information
+						// Prescription Number
+						expr = xpath.compile("fulfillmentHistory/prescriptionNumber");
+						Node nPrescriptionNumber = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						sResponse = sResponse + "<table border='1'><tr><th>Rx Number</th><th>When Filled</th><th>Pharmacy</th><th>Pharmacist</th><th>Quantity</th><th>Status</th></tr>"; 
+						sResponse = sResponse + "<tr><td>" + nPrescriptionNumber.getTextContent() + "</td>\n";
 
- 			indexURL = sb.lastIndexOf("href");
- 	 		if (indexURL > 0)
- 	 		{
- 	 			sBeginUrl = sb.substring(indexURL + 6);
- 	 			String sThirdUrl = sBeginUrl.substring(0, sBeginUrl.indexOf("\""));
- 	 			// third call to server
- 	 			sb.setLength(0);
- 	 			sUrl = PDMPGet(sb, model, baseURL + sThirdUrl, userpassword, "Accept", "application/atom+xml");
- 	 			
- 	 			sb.setLength(0);
- 	 			sb.append(sUrl);
-//	 			model.addAttribute("subsection", sUrl.toString());
+						// When Filled
+						expr = xpath.compile("fulfillmentHistory/dispenseDate");
+						Node nWhenFilled = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						sResponse = sResponse + "<td>" + nWhenFilled.getTextContent() + "</td>\n";
 
-// 	 			indexURL = sb.lastIndexOf("href=\"/prescriptions");
- 	 			int ndex = 1;
- 	 			int indexPrescriptions = 1;
- 	 			String sPrescriptions = sb.toString();
- 	 			String sURLCollection = "";
- 	 			while (indexPrescriptions >= 0)
- 	 			{
- 	 	 			indexPrescriptions = nthIndexOf(sPrescriptions, "href=\"/prescriptions", ndex);
- 	 	 			ndex = ndex + 2;
- 	 				if (indexPrescriptions > 0) {
- 	 	 				sBeginUrl = sPrescriptions.substring(indexPrescriptions + 6);
- 	 	 				String sFourthUrl = sBeginUrl.substring(0, sBeginUrl.indexOf("\""));
- 	 	 				// third call to server
- 	 	 				sb.setLength(0);
- 	 	 				sUrl = PDMPGet(sb, model, baseURL + sFourthUrl, userpassword, null, null);
+						// Pharmacy
+						expr = xpath.compile("fulfillmentHistory/pharmacy/name");
+						Node nPharmacyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						sResponse = sResponse + "<td>" + nPharmacyName.getTextContent() + "</td>\n";
+					
+						// Pharmacist  Name
+						expr = xpath.compile("fulfillmentHistory/pharmacist/name/givenName");
+						Node nPharmacistGivenName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
 
- 	 	 				sb.setLength(0);
- 	 	 				sb.append(sUrl);
- 	 	 				indexURL = sb.lastIndexOf("<div class=\"container\">");
- 	 	 	 			if (indexURL > 0) {
- 	 	 	 				sBeginUrl = sb.substring(indexURL + 23);
- 	 	 	 				indexURL = sBeginUrl.lastIndexOf("</p>");
- 	 	 	 				sUrl = sBeginUrl.substring(0, indexURL+4);
- 	 	 	 				sURLCollection = sURLCollection + sUrl;
+						expr = xpath.compile("fulfillmentHistory/pharmacist/name/familyName");
+						Node nPharmacistFamilyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+					
+						sResponse = sResponse + "<td>" + nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent() + "</td>\n";
 
-// 	 	 	 				System.out.println(sUrl.toString()); 
-// 	 	 	 				model.addAttribute("subsection", sUrl.toString());
-// 	 	 	 			} else {
-// 	 	 	 				System.out.println(sNoRecordsFound);
-// 	 	 	 				model.addAttribute("subsection", sNoRecordsFound + " 1 ");
- 	 	 	 			}
+						// Quantity
+						expr = xpath.compile("fulfillmentHistory/quantityDispensed");
+						Node nQuantity = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eQuantity = (Element) nQuantity;
+						String sQuantity = eQuantity.getAttribute("amount");
+						sResponse = sResponse + "<td>" + sQuantity + "</td>\n";
 
- 	 	 			} else {
- 	 					System.out.println(sNoRecordsFound);
- 	 					model.addAttribute("subsection", sNoRecordsFound);
- 	 	 			}
- 	 			}
- 				model.addAttribute("subsection", sURLCollection);
+						// Status
+						expr = xpath.compile("fulfillmentHistory");
+						Node nStatus = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eStatus = (Element) nStatus;
+						String sStatus = eStatus.getAttribute("fillStatus");
+						sResponse = sResponse + "<td>" + sStatus + "</td></tr></table>\n<HR/>";
 
- 			} else {
- 	 			System.out.println(sNoRecordsFound);
- 	 			model.addAttribute("subsection", sNoRecordsFound);
- 	 		}
-
- 		} else {
- 			System.out.println(sNoRecordsFound);
- 			model.addAttribute("subsection", sNoRecordsFound);
- 		}
-
-		sb = null;
+					}
+				}
+			}
+			catch (Exception e)
+			{
+				log.error("DOM Exception", e.fillInStackTrace());
+			}
+		}
+		
+		model.addAttribute("subsection", sResponse);
 
 	}
 
@@ -219,6 +324,7 @@ public class PDMPPageController {
 		}
 		catch (IOException e) {
 			e.printStackTrace();
+			log.error("IOException", e.fillInStackTrace());
 			return "IO Error! " + sURL;
 		}
 		finally	{
@@ -272,4 +378,35 @@ public class PDMPPageController {
 	    }
 	    return index;
 	}
+	
+	public static Document loadXMLFromString(String xml) throws Exception
+    {
+        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+        DocumentBuilder builder = factory.newDocumentBuilder();
+        InputStream is = new ByteArrayInputStream(xml.getBytes());
+        return builder.parse(is);
+    }
+	
+	protected String XParseDoc(String sResponse, String expression)
+	{
+		try
+		{
+			DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
+			DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
+			Document doc = loadXMLFromString(sResponse);
+			XPathFactory xPathfactory = XPathFactory.newInstance();
+			XPath xpath = xPathfactory.newXPath();
+			XPathExpression expr = xpath.compile(expression);
+			Node nNode = (Node) expr.evaluate(doc, XPathConstants.NODE);
+			Element hNode = (Element) nNode;
+			sWorkerUrl = sPDMPUrl + hNode.getAttribute("href");
+			sWorkerType = hNode.getAttribute("type");
+		}
+		catch (Exception e)
+		{
+			log.error("DOM Exception", e.fillInStackTrace());
+		}
+		return sWorkerType;
+	}
+
 }
