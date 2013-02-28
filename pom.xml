@@ -6,19 +6,19 @@
 	<artifactId>pdmp_query</artifactId>
 	<version>1.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
-	<name>PDMP Query Module</name>
-	<description>Module queries a PDMP service and returns C32 data on patient prescriptions.</description>
-	<url>https://wiki.openmrs.org/display/docs/PDMP+Query+Module+Module</url>
+	<name>PDMP Query</name>
+	<description>Queries and displays PDMP (Prescription Drug Monitoring Program) medication history</description>
+	<url>https://wiki.openmrs.org/display/docs/PDMP+Query+Module</url>
 	
 	<developers>
 		<developer>
-			<name>RCAGLE</name>
+			<name>MITRE Corporation</name>
 		</developer>
 	</developers>
 	
 	<organization>
-		<name>OpenMRS</name>
-		<url>http://openmrs.org</url>
+		<name>MITRE Corporation</name>
+		<url>http://mitre.org/</url>
 	</organization>
 
 	<scm>
@@ -33,7 +33,7 @@
 	</modules>
 	
 	<properties>
-		<openMRSVersion>1.8.2</openMRSVersion>
+		<openMRSVersion>1.8.4</openMRSVersion>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 	</properties>
 
