@@ -106,7 +106,7 @@ public class PDMPPageController {
 				if (nLPeopleMedication.getLength() > 0)
 				{
                                     List meds = new ArrayList();
-                                    model.addAttribute("meds", meds);
+                                    model.addAttribute("prescriptions", meds);
 
 					for (int countMeds = 0; countMeds < nLPeopleMedication.getLength(); countMeds++)
 					{
