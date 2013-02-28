@@ -55,9 +55,8 @@ public class PDMPPageController {
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
-		String sNoRecordsFound = "No PDMP Records Found";
 		String sUrl = null;
-		String sResponse = null;
+		String sResponse = "No PDMP Records Found";
 		String sType = null;
 		Patient patient = Context.getPatientService().getPatient(patientId);
 		Person person = Context.getPersonService().getPerson(patient);
@@ -86,16 +85,14 @@ public class PDMPPageController {
 			XPath xpath = xPathfactory.newXPath();
 			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
 			Element hPeople = (Element) expr.evaluate(doc, XPathConstants.NODE);
-			sUrl = baseURL + hPeople.getAttribute("href");
-			sType = hPeople.getAttribute("type");
+                        if (hPeople != null) {
+                            sUrl = baseURL + hPeople.getAttribute("href");
+                            sType = hPeople.getAttribute("type");
+                        }
                 }
 
-		if (sType == null)
-		{
-			sResponse = "No PDMP Records found.";
-		}
-		else
-		{
+		if (sType != null)
+                {
 			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
 			{
 				XPath xpath = xPathfactory.newXPath();
