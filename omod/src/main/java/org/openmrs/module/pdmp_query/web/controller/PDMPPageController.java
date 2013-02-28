@@ -1,6 +1,7 @@
 package org.openmrs.module.pdmp_query.web.controller;
 
-
+import java.util.ArrayList;
+import java.util.List;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -38,6 +39,7 @@ import org.xml.sax.SAXException;
 
 import org.openmrs.module.pdmp_query.Config;
 import org.openmrs.module.pdmp_query.ConfigService;
+import org.openmrs.module.pdmp_query.Prescription;
 
 
 /**
@@ -55,7 +57,6 @@ public class PDMPPageController {
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
 		String sUrl = null;
-		String sResponse = "No PDMP Records Found";
 		String sType = null;
 		Patient patient = Context.getPatientService().getPatient(patientId);
 		Person person = Context.getPersonService().getPerson(patient);
@@ -104,68 +105,65 @@ public class PDMPPageController {
 				NodeList nLPeopleMedication = (NodeList)xpath.evaluate("/record/medicationOrder", doc, XPathConstants.NODESET);
 				if (nLPeopleMedication.getLength() > 0)
 				{
-					sResponse = "";
+                                    List meds = new ArrayList();
+                                    model.addAttribute("meds", meds);
+
 					for (int countMeds = 0; countMeds < nLPeopleMedication.getLength(); countMeds++)
 					{
+                                            Prescription drug = new Prescription();
+
 						Node nMed = nLPeopleMedication.item(countMeds);
 
 						// Prescriber Information
 						Element ePrescriberName = (Element)xpath.evaluate("orderInformation/prescriber/name", nMed, XPathConstants.NODE);
 						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
-						sResponse = sResponse + "<p><b>Prescriber:</b> ";
+                                                String prescriber = "";
 						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++)
 						{
-							sResponse = sResponse + nLPrescriberAttrs.item(countPrescriberAttrs).getTextContent();
+                                                        prescriber += nLPrescriberAttrs.item(countPrescriberAttrs).getTextContent();
 						}
-						sResponse = sResponse + "</p>\n";
+                                                drug.setPrescriber(prescriber);
 
 						// Drug Information:
 						Element eMedicationCode = (Element)xpath.evaluate("medicationInformation/code", nMed, XPathConstants.NODE);
-						String sDisplayName = eMedicationCode.getAttribute("displayName");
-						sResponse = sResponse + "<p><b>Drug:</b> " + sDisplayName;
-						sResponse = sResponse + "</p>\n";
+                                                drug.setDrug(eMedicationCode.getAttribute("displayName"));
 
 						// Order Information
 						Node nOrderedDateTime = (Node)xpath.evaluate("orderInformation/orderedDateTime", nMed, XPathConstants.NODE);
-						sResponse = sResponse + "<p><b>When written: </b>" + nOrderedDateTime.getTextContent() + "</p>\n";
+                                                drug.setWrittenOn(nOrderedDateTime.getTextContent());
 
 						// Fullfillment Information
 						// Prescription Number
 						Node nPrescriptionNumber = (Node)xpath.evaluate("fulfillmentHistory/prescriptionNumber", nMed, XPathConstants.NODE);
-						sResponse = sResponse + "<table border='1'><tr><th>Rx Number</th><th>When Filled</th><th>Pharmacy</th><th>Pharmacist</th><th>Quantity</th><th>Status</th></tr>";
-						sResponse = sResponse + "<tr><td>" + nPrescriptionNumber.getTextContent() + "</td>\n";
+                                                drug.setRxNumber(nPrescriptionNumber.getTextContent());
 
 						// When Filled
 						Node nWhenFilled = (Node)xpath.evaluate("fulfillmentHistory/dispenseDate", nMed, XPathConstants.NODE);
-						sResponse = sResponse + "<td>" + nWhenFilled.getTextContent() + "</td>\n";
+                                                drug.setFilledOn(nWhenFilled.getTextContent());
 
 						// Pharmacy
 						Node nPharmacyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacy/name", nMed, XPathConstants.NODE);
-						sResponse = sResponse + "<td>" + nPharmacyName.getTextContent() + "</td>\n";
+                                                drug.setPharmacy(nPharmacyName.getTextContent());
 
 						// Pharmacist  Name
 						Node nPharmacistGivenName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/givenName", nMed, XPathConstants.NODE);
 						Node nPharmacistFamilyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/familyName", nMed, XPathConstants.NODE);
 
-						sResponse = sResponse + "<td>" + nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent() + "</td>\n";
+                                                drug.setPharmacist(nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent());
 
 						// Quantity
 						Element eQuantity = (Element)xpath.evaluate("fulfillmentHistory/quantityDispensed", nMed, XPathConstants.NODE);
-						String sQuantity = eQuantity.getAttribute("amount");
-						sResponse = sResponse + "<td>" + sQuantity + "</td>\n";
+                                                drug.setQuantityFilled(eQuantity.getAttribute("amount"));
 
 						// Status
 						Element eStatus = (Element)xpath.evaluate("fulfillmentHistory", nMed, XPathConstants.NODE);
-						String sStatus = eStatus.getAttribute("fillStatus");
-						sResponse = sResponse + "<td>" + sStatus + "</td></tr></table>\n<HR/>";
+                                                drug.setStatus(eStatus.getAttribute("fillStatus"));
 
+                                                meds.add(drug);
 					}
 				}
 			}
 		}
-
-		model.addAttribute("subsection", sResponse);
-
 	}
 
     private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal) throws IOException, ParserConfigurationException, SAXException
