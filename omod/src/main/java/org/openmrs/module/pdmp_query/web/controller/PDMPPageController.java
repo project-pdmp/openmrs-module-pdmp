@@ -10,6 +10,7 @@ import java.net.ProtocolException;
 import java.net.URL;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.text.ParseException;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -51,7 +52,7 @@ public class PDMPPageController {
 	protected final Log log = LogFactory.getLog(getClass());
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
-	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
+	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException {
             XPath xpath = XPathFactory.newInstance().newXPath();
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
@@ -67,6 +68,7 @@ public class PDMPPageController {
 		String sBirthdate = "";
 		String sAddress = "";
 		DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
+		DateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
 
 		sGivenName = person.getGivenName();
 		sFamilyName = person.getFamilyName();
@@ -130,7 +132,7 @@ public class PDMPPageController {
 
 						// Order Information
 						Node nOrderedDateTime = (Node)xpath.evaluate("orderInformation/orderedDateTime", nMed, XPathConstants.NODE);
-                                                drug.setWrittenOn(nOrderedDateTime.getTextContent());
+                                                drug.setWrittenOn(isoDate.parse(nOrderedDateTime.getTextContent()));
 
 						// Fullfillment Information
 						// Prescription Number
@@ -139,7 +141,7 @@ public class PDMPPageController {
 
 						// When Filled
 						Node nWhenFilled = (Node)xpath.evaluate("fulfillmentHistory/dispenseDate", nMed, XPathConstants.NODE);
-                                                drug.setFilledOn(nWhenFilled.getTextContent());
+                                                drug.setFilledOn(isoDate.parse(nWhenFilled.getTextContent()));
 
 						// Pharmacy
 						Node nPharmacyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacy/name", nMed, XPathConstants.NODE);

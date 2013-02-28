@@ -14,13 +14,16 @@
 package org.openmrs.module.pdmp_query;
 
 
+import java.util.Date;
+
+
 public class Prescription {
 
     private String prescriber;
     private String drug;
-    private String writtenOn;
+    private Date writtenOn;
     private String rxNumber;
-    private String filledOn;
+    private Date filledOn;
     private String pharmacy;
     private String pharmacist;
     private String quantityFilled;
@@ -45,11 +48,11 @@ public class Prescription {
     }
 
 
-    public String getWrittenOn() {
+    public Date getWrittenOn() {
         return writtenOn;
     }
 
-    public void setWrittenOn(String writtenOn) {
+    public void setWrittenOn(Date writtenOn) {
         this.writtenOn = writtenOn;
     }
 
@@ -63,11 +66,11 @@ public class Prescription {
     }
 
 
-    public String getFilledOn() {
+    public Date getFilledOn() {
         return filledOn;
     }
 
-    public void setFilledOn(String filledOn) {
+    public void setFilledOn(Date filledOn) {
         this.filledOn = filledOn;
     }
 
