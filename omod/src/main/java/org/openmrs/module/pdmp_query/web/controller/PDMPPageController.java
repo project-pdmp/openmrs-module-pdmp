@@ -15,7 +15,6 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.xpath.XPath;
 import javax.xml.xpath.XPathConstants;
-import javax.xml.xpath.XPathExpression;
 import javax.xml.xpath.XPathExpressionException;
 import javax.xml.xpath.XPathFactory;
 
@@ -51,7 +50,7 @@ public class PDMPPageController {
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
 	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException {
-            XPathFactory xPathfactory = XPathFactory.newInstance();
+            XPath xpath = XPathFactory.newInstance().newXPath();
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
@@ -81,41 +80,28 @@ public class PDMPPageController {
 		Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
 				"&family=" + sFamilyName + "&gender=" + sGender +
 				"&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml");
-                {
-			XPath xpath = xPathfactory.newXPath();
-			XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
-			Element hPeople = (Element) expr.evaluate(doc, XPathConstants.NODE);
-                        if (hPeople != null) {
-                            sUrl = baseURL + hPeople.getAttribute("href");
-                            sType = hPeople.getAttribute("type");
-                        }
+
+                Element hPeople = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
+                if (hPeople != null) {
+                    sUrl = baseURL + hPeople.getAttribute("href");
+                    sType = hPeople.getAttribute("type");
                 }
 
 		if (sType != null)
                 {
 			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
-			{
-				XPath xpath = xPathfactory.newXPath();
-				XPathExpression expr = xpath.compile("/feed/entry/link[@type='application/atom+xml']");
-				Element hPeopleSRPP = (Element) expr.evaluate(doc, XPathConstants.NODE);
-				sUrl = baseURL + hPeopleSRPP.getAttribute("href");
-				sType = hPeopleSRPP.getAttribute("type");
-			}
+                        Element hPeopleSRPP = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
+                        sUrl = baseURL + hPeopleSRPP.getAttribute("href");
+                        sType = hPeopleSRPP.getAttribute("type");
+
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
+                        Element hPeopleSRPPReport = (Element)xpath.evaluate("/feed/entry/link[@rel='report']", doc, XPathConstants.NODE);
+                        sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
+                        sType = hPeopleSRPPReport.getAttribute("type");
 
 			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
 			{
-				XPath xpath = xPathfactory.newXPath();
-				XPathExpression expr = xpath.compile("/feed/entry/link[@rel='report']");
-				Element hPeopleSRPPReport = (Element) expr.evaluate(doc, XPathConstants.NODE);
-				sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
-				sType = hPeopleSRPPReport.getAttribute("type");
-			}
-
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
-			{
-				XPath xpath = xPathfactory.newXPath();
-				XPathExpression expr = xpath.compile("/record/medicationOrder");
-				NodeList nLPeopleMedication = (NodeList) expr.evaluate(doc, XPathConstants.NODESET);
+				NodeList nLPeopleMedication = (NodeList)xpath.evaluate("/record/medicationOrder", doc, XPathConstants.NODESET);
 				if (nLPeopleMedication.getLength() > 0)
 				{
 					sResponse = "";
@@ -124,8 +110,7 @@ public class PDMPPageController {
 						Node nMed = nLPeopleMedication.item(countMeds);
 
 						// Prescriber Information
-						expr = xpath.compile("orderInformation/prescriber/name");
-						Element ePrescriberName = (Element) expr.evaluate(nMed, XPathConstants.NODE);
+						Element ePrescriberName = (Element)xpath.evaluate("orderInformation/prescriber/name", nMed, XPathConstants.NODE);
 						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
 						sResponse = sResponse + "<p><b>Prescriber:</b> ";
 						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++)
@@ -135,52 +120,42 @@ public class PDMPPageController {
 						sResponse = sResponse + "</p>\n";
 
 						// Drug Information:
-						expr = xpath.compile("medicationInformation/code");
-						Element eMedicationCode = (Element) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eMedicationCode = (Element)xpath.evaluate("medicationInformation/code", nMed, XPathConstants.NODE);
 						String sDisplayName = eMedicationCode.getAttribute("displayName");
 						sResponse = sResponse + "<p><b>Drug:</b> " + sDisplayName;
 						sResponse = sResponse + "</p>\n";
 
 						// Order Information
-						expr = xpath.compile("orderInformation/orderedDateTime");
-						Node nOrderedDateTime = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Node nOrderedDateTime = (Node)xpath.evaluate("orderInformation/orderedDateTime", nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<p><b>When written: </b>" + nOrderedDateTime.getTextContent() + "</p>\n";
 
 						// Fullfillment Information
 						// Prescription Number
-						expr = xpath.compile("fulfillmentHistory/prescriptionNumber");
-						Node nPrescriptionNumber = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Node nPrescriptionNumber = (Node)xpath.evaluate("fulfillmentHistory/prescriptionNumber", nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<table border='1'><tr><th>Rx Number</th><th>When Filled</th><th>Pharmacy</th><th>Pharmacist</th><th>Quantity</th><th>Status</th></tr>";
 						sResponse = sResponse + "<tr><td>" + nPrescriptionNumber.getTextContent() + "</td>\n";
 
 						// When Filled
-						expr = xpath.compile("fulfillmentHistory/dispenseDate");
-						Node nWhenFilled = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Node nWhenFilled = (Node)xpath.evaluate("fulfillmentHistory/dispenseDate", nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<td>" + nWhenFilled.getTextContent() + "</td>\n";
 
 						// Pharmacy
-						expr = xpath.compile("fulfillmentHistory/pharmacy/name");
-						Node nPharmacyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Node nPharmacyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacy/name", nMed, XPathConstants.NODE);
 						sResponse = sResponse + "<td>" + nPharmacyName.getTextContent() + "</td>\n";
 
 						// Pharmacist  Name
-						expr = xpath.compile("fulfillmentHistory/pharmacist/name/givenName");
-						Node nPharmacistGivenName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
-
-						expr = xpath.compile("fulfillmentHistory/pharmacist/name/familyName");
-						Node nPharmacistFamilyName = (Node) expr.evaluate(nMed, XPathConstants.NODE);
+						Node nPharmacistGivenName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/givenName", nMed, XPathConstants.NODE);
+						Node nPharmacistFamilyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/familyName", nMed, XPathConstants.NODE);
 
 						sResponse = sResponse + "<td>" + nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent() + "</td>\n";
 
 						// Quantity
-						expr = xpath.compile("fulfillmentHistory/quantityDispensed");
-						Element eQuantity = (Element) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eQuantity = (Element)xpath.evaluate("fulfillmentHistory/quantityDispensed", nMed, XPathConstants.NODE);
 						String sQuantity = eQuantity.getAttribute("amount");
 						sResponse = sResponse + "<td>" + sQuantity + "</td>\n";
 
 						// Status
-						expr = xpath.compile("fulfillmentHistory");
-						Element eStatus = (Element) expr.evaluate(nMed, XPathConstants.NODE);
+						Element eStatus = (Element)xpath.evaluate("fulfillmentHistory", nMed, XPathConstants.NODE);
 						String sStatus = eStatus.getAttribute("fillStatus");
 						sResponse = sResponse + "<td>" + sStatus + "</td></tr></table>\n<HR/>";
 
