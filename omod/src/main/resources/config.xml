@@ -32,6 +32,16 @@
 		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.PatientTab</class>
 	</extension>
 
+	<!-- Adds CSS to all page headers so we can style the PDMP page -->
+	<extension>
+		<point>org.openmrs.headerFullIncludeExt</point>
+		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.HeaderIncludeExt</class>
+	</extension>
+	<extension>
+		<point>org.openmrs.headerMinimalIncludeExt</point>
+		<class>${project.parent.groupId}.${project.parent.artifactId}.extension.html.HeaderIncludeExt</class>
+	</extension>
+
 	<!-- Maps hibernate file's, if present -->
 	<mappingFiles>
 		Config.hbm.xml

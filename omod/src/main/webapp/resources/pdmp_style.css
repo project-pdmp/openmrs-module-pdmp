@@ -1,0 +1,8 @@
+div.pdmp {
+  margin-bottom: 0.5em;
+}
+
+.pdmp th, td {
+  padding-left: 5px;
+  padding-right: 1em;
+}
