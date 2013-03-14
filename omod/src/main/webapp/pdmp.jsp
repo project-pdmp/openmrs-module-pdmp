@@ -1,5 +1,17 @@
+<%@ page import="java.util.Collections,java.util.Comparator,java.util.List,org.openmrs.module.pdmp_query.Prescription" %>
 <%@ taglib uri="http://java.sun.com/jsp/jstl/core" prefix="c" %>
 <%@ taglib prefix="openmrs" uri="/WEB-INF/taglibs/openmrs.tld" %>
+
+<%
+Collections.sort((List<Prescription>)request.getAttribute("prescriptions"), new Comparator<Prescription>() {
+                                public int compare(Prescription o1, Prescription o2) {
+                                  return o2.getWrittenOn().compareTo(o1.getWrittenOn());
+                                }
+                                public boolean equals(Object obj) {
+                                  return (obj == this);
+                                }
+                                });
+%>
 
 <c:choose>
   <c:when test="${prescriptions == null}">
