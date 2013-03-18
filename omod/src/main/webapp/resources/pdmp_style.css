@@ -2,7 +2,12 @@ div.pdmp {
   margin-bottom: 0.5em;
 }
 
-.pdmp th, td {
+div.pdmp table {
+  width: 100%;
+}
+
+div.pdmp th, div.pdmp td {
   padding-left: 5px;
   padding-right: 1em;
+  width: 14%;
 }
