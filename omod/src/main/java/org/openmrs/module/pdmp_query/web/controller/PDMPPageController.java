@@ -1,6 +1,7 @@
 package org.openmrs.module.pdmp_query.web.controller;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 import java.util.List;
 import java.io.IOException;
 import java.io.InputStream;
@@ -12,6 +13,11 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.text.ParseException;
 
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.namespace.NamespaceContext;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
@@ -23,6 +29,11 @@ import javax.xml.xpath.XPathFactory;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.ncpdp.schema.script.HistoryDispensedMedicationType;
+import org.ncpdp.schema.script.NameType;
+import org.ncpdp.schema.script.OptionalPharmacyType;
+import org.ncpdp.schema.script.QuantityType;
+import org.ncpdp.schema.script.RxHistoryResponse;
 import org.openmrs.api.context.Context;
 import org.openmrs.Patient;
 import org.openmrs.Person;
@@ -52,8 +63,31 @@ public class PDMPPageController {
 	protected final Log log = LogFactory.getLog(getClass());
 
 	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
-	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException {
+	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException, JAXBException {
+
             XPath xpath = XPathFactory.newInstance().newXPath();
+            xpath.setNamespaceContext(new NamespaceContext() {
+                    public String getNamespaceURI(String prefix) {
+                        if (prefix.equals("script")) {
+                            return "http://www.ncpdp.org/schema/SCRIPT";
+                        }
+                        return XMLConstants.NULL_NS_URI;
+                    }
+                    public String getPrefix(String namespaceURI) {
+                        if (namespaceURI.equals( "http://www.ncpdp.org/schema/SCRIPT")) {
+                            return "script";
+                        }
+                        return null;
+                    }
+                    public Iterator getPrefixes(String namespaceURI) {
+                        ArrayList list = new ArrayList();
+                        if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
+                            list.add( "script");
+                        }
+                        return list.iterator();
+                    }
+                });
+
             Config c = Context.getService(ConfigService.class).getConfig();
             String userpassword = c.getUser() + ":" + c.getPassword();
             String baseURL = c.getUrl();
@@ -82,7 +116,7 @@ public class PDMPPageController {
 
 		Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
 				"&family=" + sFamilyName + "&gender=" + sGender +
-				"&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml");
+                                       "&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml", false);
 
                 Element hPeople = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
                 if (hPeople != null) {
@@ -92,83 +126,49 @@ public class PDMPPageController {
 
 		if (sType != null)
                 {
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
+                    doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
                         Element hPeopleSRPP = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
                         sUrl = baseURL + hPeopleSRPP.getAttribute("href");
                         sType = hPeopleSRPP.getAttribute("type");
 
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
-                        Element hPeopleSRPPReport = (Element)xpath.evaluate("/feed/entry/link[@rel='report']", doc, XPathConstants.NODE);
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
+                        Element hPeopleSRPPReport = (Element)xpath.evaluate("/feed/entry/link[@rel=\"report\" and @type=\"application/vnd.ncpdp.script.10+xml\"]", doc, XPathConstants.NODE);
                         sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
                         sType = hPeopleSRPPReport.getAttribute("type");
 
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType);
-			{
-				NodeList nLPeopleMedication = (NodeList)xpath.evaluate("/record/medicationOrder", doc, XPathConstants.NODESET);
-				if (nLPeopleMedication.getLength() > 0)
-				{
-                                    List meds = new ArrayList();
-                                    model.addAttribute("prescriptions", meds);
+			doc = PDMPGet(sUrl, userpassword, "Accept", sType, true);
+                        Element response = (Element)xpath.evaluate("/script:Message/script:Body/script:RxHistoryResponse", doc, XPathConstants.NODE);
 
-					for (int countMeds = 0; countMeds < nLPeopleMedication.getLength(); countMeds++)
-					{
-                                            Prescription drug = new Prescription();
+                        Unmarshaller u = JAXBContext.newInstance(RxHistoryResponse.class).createUnmarshaller();
+                        RxHistoryResponse rxh = (RxHistoryResponse)u.unmarshal(response);
 
-						Node nMed = nLPeopleMedication.item(countMeds);
+                        List meds = new ArrayList();
+                        model.addAttribute("prescriptions", meds);
 
-						// Prescriber Information
-						Element ePrescriberName = (Element)xpath.evaluate("orderInformation/prescriber/name", nMed, XPathConstants.NODE);
-						NodeList nLPrescriberAttrs = ePrescriberName.getChildNodes();
-                                                String prescriber = "";
-						for (int countPrescriberAttrs = 0; countPrescriberAttrs < nLPrescriberAttrs.getLength(); countPrescriberAttrs++)
-						{
-                                                        prescriber += nLPrescriberAttrs.item(countPrescriberAttrs).getTextContent();
-						}
-                                                drug.setPrescriber(prescriber);
-
-						// Drug Information:
-						Element eMedicationCode = (Element)xpath.evaluate("medicationInformation/code", nMed, XPathConstants.NODE);
-                                                drug.setDrug(eMedicationCode.getAttribute("displayName"));
-
-						// Order Information
-						Node nOrderedDateTime = (Node)xpath.evaluate("orderInformation/orderedDateTime", nMed, XPathConstants.NODE);
-                                                drug.setWrittenOn(isoDate.parse(nOrderedDateTime.getTextContent()));
-
-						// Fullfillment Information
-						// Prescription Number
-						Node nPrescriptionNumber = (Node)xpath.evaluate("fulfillmentHistory/prescriptionNumber", nMed, XPathConstants.NODE);
-                                                drug.setRxNumber(nPrescriptionNumber.getTextContent());
-
-						// When Filled
-						Node nWhenFilled = (Node)xpath.evaluate("fulfillmentHistory/dispenseDate", nMed, XPathConstants.NODE);
-                                                drug.setFilledOn(isoDate.parse(nWhenFilled.getTextContent()));
-
-						// Pharmacy
-						Node nPharmacyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacy/name", nMed, XPathConstants.NODE);
-                                                drug.setPharmacy(nPharmacyName.getTextContent());
-
-						// Pharmacist  Name
-						Node nPharmacistGivenName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/givenName", nMed, XPathConstants.NODE);
-						Node nPharmacistFamilyName = (Node)xpath.evaluate("fulfillmentHistory/pharmacist/name/familyName", nMed, XPathConstants.NODE);
-
-                                                drug.setPharmacist(nPharmacistGivenName.getTextContent() + " " + nPharmacistGivenName.getTextContent());
-
-						// Quantity
-						Element eQuantity = (Element)xpath.evaluate("fulfillmentHistory/quantityDispensed", nMed, XPathConstants.NODE);
-                                                drug.setQuantityFilled(eQuantity.getAttribute("amount"));
-
-						// Status
-						Element eStatus = (Element)xpath.evaluate("fulfillmentHistory", nMed, XPathConstants.NODE);
-                                                drug.setStatus(eStatus.getAttribute("fillStatus"));
-
-                                                meds.add(drug);
-					}
-				}
-			}
+                        for (Iterator<HistoryDispensedMedicationType> i = rxh.getMedicationDispensed().iterator(); i.hasNext();) {
+                            HistoryDispensedMedicationType med = i.next();
+                            Prescription drug = new Prescription();
+                            drug.setDrug(med.getDrugDescription());
+                            drug.setWrittenOn(isoDate.parse(med.getWrittenDate().getDateTime().toString()));
+                            List<QuantityType> quantityFilled = med.getQuantity();
+                            if (quantityFilled.size() > 0) {
+                                drug.setQuantityFilled(quantityFilled.get(0).getValue());
+                            }
+                            drug.setFilledOn(isoDate.parse(med.getDeliveredOnDate().getDateTime().toString()));
+                            NameType md = med.getPrescriber().getName();
+                            drug.setPrescriber(md.getPrefix() + " " + md.getFirstName() + " " + md.getLastName());
+                            OptionalPharmacyType store = med.getPharmacy();
+                            drug.setPharmacy(store.getStoreName());
+                            NameType pharm = store.getPharmacist();
+                            drug.setPharmacist(pharm.getFirstName() + " " + pharm.getLastName());
+                            // FIXME - drug.setRxNumber
+                            // FIXME - drug.setStatus
+                            meds.add(drug);
+                        }
 		}
 	}
 
-    private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal) throws IOException, ParserConfigurationException, SAXException
+    private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal, boolean namespaceAware) throws IOException, ParserConfigurationException, SAXException
 	{
 		HttpURLConnection connection = null;
 		URL serverAddress = null;
@@ -192,6 +192,7 @@ public class PDMPPageController {
 			connection.connect();
 
                         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+                        factory.setNamespaceAware(namespaceAware);
                         DocumentBuilder builder = factory.newDocumentBuilder();
                         return builder.parse(connection.getInputStream());
 		}
