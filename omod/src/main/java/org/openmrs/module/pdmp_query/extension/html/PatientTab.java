@@ -61,7 +61,7 @@ public class PatientTab extends PatientDashboardTabExt {
 	 * @see PatientDashboardTabExt#getTabName()
 	 */
 	public String getTabName() {
-		return "pdmp_query.title";
+		return "pdmp_query.tab_name";
 	}
 	
 }
