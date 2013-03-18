@@ -155,18 +155,29 @@ public class PDMPPageController {
                                 drug.setQuantityFilled(quantityFilled.get(0).getValue());
                             }
                             drug.setFilledOn(isoDate.parse(med.getDeliveredOnDate().getDateTime().toString()));
-                            NameType md = med.getPrescriber().getName();
-                            drug.setPrescriber(md.getPrefix() + " " + md.getFirstName() + " " + md.getLastName());
+                            drug.setPrescriber(nameToString(med.getPrescriber().getName()));
                             OptionalPharmacyType store = med.getPharmacy();
                             drug.setPharmacy(store.getStoreName());
-                            NameType pharm = store.getPharmacist();
-                            drug.setPharmacist(pharm.getFirstName() + " " + pharm.getLastName());
+                            drug.setPharmacist(nameToString(store.getPharmacist()));
                             // FIXME - drug.setRxNumber
                             // FIXME - drug.setStatus
                             meds.add(drug);
                         }
 		}
 	}
+
+
+    private String nameToString(NameType name) {
+        String n = name.getFirstName() + " " + name.getLastName();
+        if (null != name.getPrefix()) {
+            n = name.getPrefix() + " " + n;
+        }
+        if (null != name.getSuffix()) {
+            n = n + " " + name.getPrefix();
+        }
+        return n;
+    }
+
 
     private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal, boolean namespaceAware) throws IOException, ParserConfigurationException, SAXException
 	{
