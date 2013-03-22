@@ -24,7 +24,6 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.view.RedirectView;
 import org.openmrs.api.context.Context;
-import org.openmrs.util.OpenmrsUtil;
 
 import org.openmrs.module.pdmp_query.Config;
 import org.openmrs.module.pdmp_query.ConfigService;
