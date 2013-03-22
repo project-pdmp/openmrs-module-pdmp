@@ -8,7 +8,7 @@
   <packaging>pom</packaging>
   <name>PDMP Query</name>
   <description>Queries and displays PDMP (Prescription Drug Monitoring Program) medication history</description>
-  <url>https://wiki.openmrs.org/display/docs/PDMP+Query+Module</url>
+  <url>https://github.com/project-pdmp/openmrs-module-pdmp</url>
 
   <developers>
     <developer>
