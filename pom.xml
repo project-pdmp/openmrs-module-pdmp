@@ -21,12 +21,6 @@
     <url>http://mitre.org/</url>
   </organization>
 
-  <scm>
-    <connection>scm:svn:https://svn.openmrs.org/openmrs-modules/pdmp_query/trunk/</connection>
-    <developerConnection>scm:svn:https://svn.openmrs.org/openmrs-modules/pdmp_query/trunk/</developerConnection>
-    <url>https://svn.openmrs.org/openmrs-modules/pdmp_query/trunk/</url>
-  </scm>
-
   <modules>
     <module>api</module>
     <module>omod</module>
@@ -50,8 +44,6 @@
 	  <scope>compile</scope>
 	  </dependency>
       -->
-
-
 
       <!-- Begin OpenMRS core -->
 
