@@ -21,47 +21,47 @@ import org.openmrs.module.web.extension.PatientDashboardTabExt ;
 
 /**
  * This class defines the links that will appear on the administration page under the
- * "pdmp_query.title" heading. 
+ * "pdmp_query.title" heading.
  */
 public class PatientTab extends PatientDashboardTabExt {
-	
-	/**
-	 * @see PatientDashboardTabExt#getPortletUrl()
-	 */
-	@Override
-	public String getPortletUrl() {
-		return "../pdmp";
-	}
-	
-	/**
-	 * @see PatientDashboardTabExt#getRequiredPrivelege()
-	 */
-	@Override
-	public String getRequiredPrivilege() {
-		return "Patient Dashboard - View PDMP";
-	}
-	
-	/**
-	 * @see PatientDashboardTabExt#getTabId()
-	 */
-	@Override
-	public String getTabId() {
-		return "PDMPTabId";
-	}
-	
-	/**
-	 * @see PatientDashboardTabExt#getMediaType()
-	 */
-	@Override
-	public Extension.MEDIA_TYPE getMediaType() {
-		return Extension.MEDIA_TYPE.html;
-	}
-	
-	/**
-	 * @see PatientDashboardTabExt#getTabName()
-	 */
-	public String getTabName() {
-		return "pdmp_query.tab_name";
-	}
-	
+
+    /**
+     * @see PatientDashboardTabExt#getPortletUrl()
+     */
+    @Override
+    public String getPortletUrl() {
+        return "../pdmp";
+    }
+
+    /**
+     * @see PatientDashboardTabExt#getRequiredPrivelege()
+     */
+    @Override
+    public String getRequiredPrivilege() {
+        return "Patient Dashboard - View PDMP";
+    }
+
+    /**
+     * @see PatientDashboardTabExt#getTabId()
+     */
+    @Override
+    public String getTabId() {
+        return "PDMPTabId";
+    }
+
+    /**
+     * @see PatientDashboardTabExt#getMediaType()
+     */
+    @Override
+    public Extension.MEDIA_TYPE getMediaType() {
+        return Extension.MEDIA_TYPE.html;
+    }
+
+    /**
+     * @see PatientDashboardTabExt#getTabName()
+     */
+    public String getTabName() {
+        return "pdmp_query.tab_name";
+    }
+
 }

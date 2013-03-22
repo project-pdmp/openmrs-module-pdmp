@@ -60,111 +60,111 @@ import org.openmrs.module.pdmp_query.Prescription;
 @Controller
 public class PDMPPageController {
 
-	protected final Log log = LogFactory.getLog(getClass());
+    protected final Log log = LogFactory.getLog(getClass());
 
-	@RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
-	public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException, JAXBException {
+    @RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
+    public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException, JAXBException {
 
-            XPath xpath = XPathFactory.newInstance().newXPath();
-            xpath.setNamespaceContext(new NamespaceContext() {
-                    public String getNamespaceURI(String prefix) {
-                        if (prefix.equals("script")) {
-                            return "http://www.ncpdp.org/schema/SCRIPT";
-                        }
-                        return XMLConstants.NULL_NS_URI;
+        XPath xpath = XPathFactory.newInstance().newXPath();
+        xpath.setNamespaceContext(new NamespaceContext() {
+                public String getNamespaceURI(String prefix) {
+                    if (prefix.equals("script")) {
+                        return "http://www.ncpdp.org/schema/SCRIPT";
                     }
-                    public String getPrefix(String namespaceURI) {
-                        if (namespaceURI.equals( "http://www.ncpdp.org/schema/SCRIPT")) {
-                            return "script";
-                        }
-                        return null;
-                    }
-                    public Iterator getPrefixes(String namespaceURI) {
-                        ArrayList list = new ArrayList();
-                        if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
-                            list.add( "script");
-                        }
-                        return list.iterator();
-                    }
-                });
-
-            Config c = Context.getService(ConfigService.class).getConfig();
-            String userpassword = c.getUser() + ":" + c.getPassword();
-            String baseURL = c.getUrl();
-		String sUrl = null;
-		String sType = null;
-		Patient patient = Context.getPatientService().getPatient(patientId);
-		Person person = Context.getPersonService().getPerson(patient);
-
-		String sGivenName = "";
-		String sFamilyName = "";
-		String sGender = "";
-		String sBirthdate = "";
-		String sAddress = "";
-		DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
-		DateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
-
-		sGivenName = person.getGivenName();
-		sFamilyName = person.getFamilyName();
-		if (person.getGender().equalsIgnoreCase("F")) {
-			sGender = "female";
-		} else if (person.getGender().equalsIgnoreCase("M")) {
-			sGender = "male";
-		}
-		sBirthdate = dateFormat.format(person.getBirthdate());
-		sAddress = person.getPersonAddress().getCityVillage();
-
-		Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
-				"&family=" + sFamilyName + "&gender=" + sGender +
-                                       "&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml", false);
-
-                Element hPeople = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
-                if (hPeople != null) {
-                    sUrl = baseURL + hPeople.getAttribute("href");
-                    sType = hPeople.getAttribute("type");
+                    return XMLConstants.NULL_NS_URI;
                 }
+                public String getPrefix(String namespaceURI) {
+                    if (namespaceURI.equals( "http://www.ncpdp.org/schema/SCRIPT")) {
+                        return "script";
+                    }
+                    return null;
+                }
+                public Iterator getPrefixes(String namespaceURI) {
+                    ArrayList list = new ArrayList();
+                    if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
+                        list.add( "script");
+                    }
+                    return list.iterator();
+                }
+            });
 
-		if (sType != null)
-                {
-                    doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
-                        Element hPeopleSRPP = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
-                        sUrl = baseURL + hPeopleSRPP.getAttribute("href");
-                        sType = hPeopleSRPP.getAttribute("type");
+        Config c = Context.getService(ConfigService.class).getConfig();
+        String userpassword = c.getUser() + ":" + c.getPassword();
+        String baseURL = c.getUrl();
+        String sUrl = null;
+        String sType = null;
+        Patient patient = Context.getPatientService().getPatient(patientId);
+        Person person = Context.getPersonService().getPerson(patient);
 
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
-                        Element hPeopleSRPPReport = (Element)xpath.evaluate("/feed/entry/link[@rel=\"report\" and @type=\"application/vnd.ncpdp.script.10+xml\"]", doc, XPathConstants.NODE);
-                        sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
-                        sType = hPeopleSRPPReport.getAttribute("type");
+        String sGivenName = "";
+        String sFamilyName = "";
+        String sGender = "";
+        String sBirthdate = "";
+        String sAddress = "";
+        DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
+        DateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
 
-			doc = PDMPGet(sUrl, userpassword, "Accept", sType, true);
-                        Element response = (Element)xpath.evaluate("/script:Message/script:Body/script:RxHistoryResponse", doc, XPathConstants.NODE);
+        sGivenName = person.getGivenName();
+        sFamilyName = person.getFamilyName();
+        if (person.getGender().equalsIgnoreCase("F")) {
+            sGender = "female";
+        } else if (person.getGender().equalsIgnoreCase("M")) {
+            sGender = "male";
+        }
+        sBirthdate = dateFormat.format(person.getBirthdate());
+        sAddress = person.getPersonAddress().getCityVillage();
 
-                        Unmarshaller u = JAXBContext.newInstance(RxHistoryResponse.class).createUnmarshaller();
-                        RxHistoryResponse rxh = (RxHistoryResponse)u.unmarshal(response);
+        Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
+                               "&family=" + sFamilyName + "&gender=" + sGender +
+                               "&loc=" + sAddress + "&dob=" + sBirthdate, userpassword, "Accept", "application/atom+xml", false);
 
-                        List meds = new ArrayList();
-                        model.addAttribute("prescriptions", meds);
+        Element hPeople = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
+        if (hPeople != null) {
+            sUrl = baseURL + hPeople.getAttribute("href");
+            sType = hPeople.getAttribute("type");
+        }
 
-                        for (Iterator<HistoryDispensedMedicationType> i = rxh.getMedicationDispensed().iterator(); i.hasNext();) {
-                            HistoryDispensedMedicationType med = i.next();
-                            Prescription drug = new Prescription();
-                            drug.setDrug(med.getDrugDescription());
-                            drug.setWrittenOn(isoDate.parse(med.getWrittenDate().getDateTime().toString()));
-                            List<QuantityType> quantityFilled = med.getQuantity();
-                            if (quantityFilled.size() > 0) {
-                                drug.setQuantityFilled(quantityFilled.get(0).getValue());
-                            }
-                            drug.setFilledOn(isoDate.parse(med.getDeliveredOnDate().getDateTime().toString()));
-                            drug.setPrescriber(nameToString(med.getPrescriber().getName()));
-                            OptionalPharmacyType store = med.getPharmacy();
-                            drug.setPharmacy(store.getStoreName());
-                            drug.setPharmacist(nameToString(store.getPharmacist()));
-                            // FIXME - drug.setRxNumber
-                            // FIXME - drug.setStatus
-                            meds.add(drug);
-                        }
-		}
-	}
+        if (sType != null)
+            {
+                doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
+                Element hPeopleSRPP = (Element)xpath.evaluate("/feed/entry/link[@type='application/atom+xml']", doc, XPathConstants.NODE);
+                sUrl = baseURL + hPeopleSRPP.getAttribute("href");
+                sType = hPeopleSRPP.getAttribute("type");
+
+                doc = PDMPGet(sUrl, userpassword, "Accept", sType, false);
+                Element hPeopleSRPPReport = (Element)xpath.evaluate("/feed/entry/link[@rel=\"report\" and @type=\"application/vnd.ncpdp.script.10+xml\"]", doc, XPathConstants.NODE);
+                sUrl = baseURL + hPeopleSRPPReport.getAttribute("href");
+                sType = hPeopleSRPPReport.getAttribute("type");
+
+                doc = PDMPGet(sUrl, userpassword, "Accept", sType, true);
+                Element response = (Element)xpath.evaluate("/script:Message/script:Body/script:RxHistoryResponse", doc, XPathConstants.NODE);
+
+                Unmarshaller u = JAXBContext.newInstance(RxHistoryResponse.class).createUnmarshaller();
+                RxHistoryResponse rxh = (RxHistoryResponse)u.unmarshal(response);
+
+                List meds = new ArrayList();
+                model.addAttribute("prescriptions", meds);
+
+                for (Iterator<HistoryDispensedMedicationType> i = rxh.getMedicationDispensed().iterator(); i.hasNext();) {
+                    HistoryDispensedMedicationType med = i.next();
+                    Prescription drug = new Prescription();
+                    drug.setDrug(med.getDrugDescription());
+                    drug.setWrittenOn(isoDate.parse(med.getWrittenDate().getDateTime().toString()));
+                    List<QuantityType> quantityFilled = med.getQuantity();
+                    if (quantityFilled.size() > 0) {
+                        drug.setQuantityFilled(quantityFilled.get(0).getValue());
+                    }
+                    drug.setFilledOn(isoDate.parse(med.getDeliveredOnDate().getDateTime().toString()));
+                    drug.setPrescriber(nameToString(med.getPrescriber().getName()));
+                    OptionalPharmacyType store = med.getPharmacy();
+                    drug.setPharmacy(store.getStoreName());
+                    drug.setPharmacist(nameToString(store.getPharmacist()));
+                    // FIXME - drug.setRxNumber
+                    // FIXME - drug.setStatus
+                    meds.add(drug);
+                }
+            }
+    }
 
 
     private String nameToString(NameType name) {
@@ -180,35 +180,35 @@ public class PDMPPageController {
 
 
     private Document PDMPGet(String sURL, String userpassword, String hProp, String hPropVal, boolean namespaceAware) throws IOException, ParserConfigurationException, SAXException
-	{
-		HttpURLConnection connection = null;
-		URL serverAddress = null;
+    {
+        HttpURLConnection connection = null;
+        URL serverAddress = null;
 
-		try {
-			serverAddress = new URL(sURL);
+        try {
+            serverAddress = new URL(sURL);
 
-			//Set up the initial connection
-			connection = (HttpURLConnection)serverAddress.openConnection();
-			connection.setRequestMethod("GET");
+            //Set up the initial connection
+            connection = (HttpURLConnection)serverAddress.openConnection();
+            connection.setRequestMethod("GET");
 
-			byte[] authEncBytes = Base64.encodeBase64(userpassword.getBytes());
-			String encodedAuthorization = new String(authEncBytes);
-			connection.setRequestProperty("Authorization", "Basic "+
-					encodedAuthorization);
-			if (hProp!=null) {
-				connection.addRequestProperty(hProp, hPropVal);
-			}
-			connection.setDoOutput(true);
-			connection.setReadTimeout(10000);
-			connection.connect();
+            byte[] authEncBytes = Base64.encodeBase64(userpassword.getBytes());
+            String encodedAuthorization = new String(authEncBytes);
+            connection.setRequestProperty("Authorization", "Basic "+
+                                          encodedAuthorization);
+            if (hProp!=null) {
+                connection.addRequestProperty(hProp, hPropVal);
+            }
+            connection.setDoOutput(true);
+            connection.setReadTimeout(10000);
+            connection.connect();
 
-                        DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-                        factory.setNamespaceAware(namespaceAware);
-                        DocumentBuilder builder = factory.newDocumentBuilder();
-                        return builder.parse(connection.getInputStream());
-		}
-		finally	{
-			connection.disconnect();
-		}
-	}
+            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+            factory.setNamespaceAware(namespaceAware);
+            DocumentBuilder builder = factory.newDocumentBuilder();
+            return builder.parse(connection.getInputStream());
+        }
+        finally	{
+            connection.disconnect();
+        }
+    }
 }
