@@ -22,9 +22,9 @@ Installation
 ------------
 
 This module uses the Maven application to build.  Most of the time all
-you need to do is run "mvn install" and the module will be build in
-the omod/target directory.  It's called pdmp_query-<version>.omod
-where <version> is the module version.
+you need to do is run "mvn install" and the module will be built in
+the omod/target directory.  It's called pdmp_query-&lt;version&gt;.omod
+where &lt;version&gt; is the module version.
 
 Once you've built the module you can upload it to OpenMRS using the
 administrative interface.
