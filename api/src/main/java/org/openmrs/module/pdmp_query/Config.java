@@ -28,6 +28,7 @@ public class Config {
     private String password;
 
 
+    @SuppressWarnings("unused")
     private Config() {
         this.id = 1;
     }

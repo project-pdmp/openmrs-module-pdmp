@@ -30,7 +30,6 @@ import org.ncpdp.schema.script.OptionalPharmacyType;
 import org.ncpdp.schema.script.QuantityType;
 import org.ncpdp.schema.script.RxHistoryResponse;
 import org.openmrs.Patient;
-import org.openmrs.Person;
 import org.openmrs.api.context.Context;
 import org.openmrs.module.pdmp_query.Config;
 import org.openmrs.module.pdmp_query.ConfigService;
@@ -68,8 +67,8 @@ public class PDMPPageController {
                     }
                     return null;
                 }
-                public Iterator getPrefixes(String namespaceURI) {
-                    List list = new ArrayList();
+                public Iterator<String> getPrefixes(String namespaceURI) {
+                    List<String> list = new ArrayList<String>();
                     if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
                         list.add( "script");
                     }
@@ -83,7 +82,6 @@ public class PDMPPageController {
         String sUrl = null;
         String sType = null;
         Patient patient = Context.getPatientService().getPatient(patientId);
-        Person person = Context.getPersonService().getPerson(patient);
 
         String sGivenName = "";
         String sFamilyName = "";
@@ -93,15 +91,15 @@ public class PDMPPageController {
         DateFormat dateFormat = new SimpleDateFormat("yyyy-MMM-dd");
         DateFormat isoDate = new SimpleDateFormat("yyyy-MM-dd");
 
-        sGivenName = person.getGivenName();
-        sFamilyName = person.getFamilyName();
-        if (person.getGender().equalsIgnoreCase("F")) {
+        sGivenName = patient.getGivenName();
+        sFamilyName = patient.getFamilyName();
+        if (patient.getGender().equalsIgnoreCase("F")) {
             sGender = "female";
-        } else if (person.getGender().equalsIgnoreCase("M")) {
+        } else if (patient.getGender().equalsIgnoreCase("M")) {
             sGender = "male";
         }
-        sBirthdate = dateFormat.format(person.getBirthdate());
-        sAddress = person.getPersonAddress().getCityVillage();
+        sBirthdate = dateFormat.format(patient.getBirthdate());
+        sAddress = patient.getPersonAddress().getCityVillage();
 
         Document doc = PDMPGet(baseURL + "search?given=" + sGivenName +
                                "&family=" + sFamilyName + "&gender=" + sGender +
@@ -130,7 +128,7 @@ public class PDMPPageController {
             Unmarshaller u = JAXBContext.newInstance(RxHistoryResponse.class).createUnmarshaller();
             RxHistoryResponse rxh = (RxHistoryResponse)u.unmarshal(response);
 
-            List meds = new ArrayList();
+            List<Prescription> meds = new ArrayList<Prescription>();
             model.addAttribute("prescriptions", meds);
 
             for (Iterator<HistoryDispensedMedicationType> i = rxh.getMedicationDispensed().iterator(); i.hasNext();) {
