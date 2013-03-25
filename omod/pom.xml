@@ -23,35 +23,28 @@
 	</dependency>
     -->
 
-    <!-- Begin OpenMRS modules -->
-
-    <dependency>
-      <groupId>${project.parent.groupId}</groupId>
-      <artifactId>${project.parent.artifactId}-api</artifactId>
-      <version>${project.parent.version}</version>
-    </dependency>
-
-
-    <!-- End OpenMRS modules -->
-
-
     <!-- Begin OpenMRS core -->
 
     <dependency>
       <groupId>org.openmrs.api</groupId>
       <artifactId>openmrs-api</artifactId>
+      <version>${openMRSVersion}</version>
       <type>jar</type>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.openmrs.web</groupId>
       <artifactId>openmrs-web</artifactId>
+      <version>${openMRSVersion}</version>
       <type>jar</type>
+      <scope>provided</scope>
     </dependency>
 
     <dependency>
       <groupId>org.openmrs.api</groupId>
       <artifactId>openmrs-api</artifactId>
+      <version>${openMRSVersion}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -59,6 +52,7 @@
     <dependency>
       <groupId>org.openmrs.web</groupId>
       <artifactId>openmrs-web</artifactId>
+      <version>${openMRSVersion}</version>
       <type>test-jar</type>
       <scope>test</scope>
     </dependency>
@@ -66,6 +60,7 @@
     <dependency>
       <groupId>org.openmrs.test</groupId>
       <artifactId>openmrs-test</artifactId>
+      <version>${openMRSVersion}</version>
       <type>pom</type>
       <scope>test</scope>
     </dependency>
@@ -78,13 +73,6 @@
       <version>1.6</version>
     </dependency>
 
-    <!--
- 	<dependency>
-	<groupId>hibernate</groupId>
-	<artifactId>hibernate</artifactId>
-	<version>3.2.6.ga</version>
-	</dependency>
-    -->
   </dependencies>
 
   <build>
