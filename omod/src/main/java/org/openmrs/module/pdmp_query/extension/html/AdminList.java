@@ -21,31 +21,31 @@ import org.openmrs.module.web.extension.AdministrationSectionExt;
 
 /**
  * This class defines the links that will appear on the administration page under the
- * "pdmp_query.title" heading. 
+ * "pdmp_query.title" heading.
  */
 public class AdminList extends AdministrationSectionExt {
-	
-	/**
-	 * @see AdministrationSectionExt#getMediaType()
-	 */
-	public Extension.MEDIA_TYPE getMediaType() {
-		return Extension.MEDIA_TYPE.html;
-	}
-	
-	/**
-	 * @see AdministrationSectionExt#getTitle()
-	 */
-	public String getTitle() {
-		return "pdmp_query.title";
-	}
-	
-	/**
-	 * @see AdministrationSectionExt#getLinks()
-	 */
-	public Map<String, String> getLinks() {
-		LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
-		map.put("/module/pdmp_query/manage.form", "pdmp_query.manage");
-		return map;
-	}
-	
+
+    /**
+     * @see AdministrationSectionExt#getMediaType()
+     */
+    public Extension.MEDIA_TYPE getMediaType() {
+        return Extension.MEDIA_TYPE.html;
+    }
+
+    /**
+     * @see AdministrationSectionExt#getTitle()
+     */
+    public String getTitle() {
+        return "pdmp_query.title";
+    }
+
+    /**
+     * @see AdministrationSectionExt#getLinks()
+     */
+    public Map<String, String> getLinks() {
+        LinkedHashMap<String, String> map = new LinkedHashMap<String, String>();
+        map.put("/module/pdmp_query/manage.form", "pdmp_query.manage");
+        return map;
+    }
+
 }
