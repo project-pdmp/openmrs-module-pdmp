@@ -53,28 +53,30 @@ public class PDMPPageController {
     @RequestMapping(value = "/module/pdmp_query/pdmp", method = RequestMethod.GET)
     public void manage(ModelMap model, @RequestParam("patientId") Integer patientId) throws ParserConfigurationException, SAXException, XPathExpressionException, IOException, ParseException, JAXBException {
 
-        XPath xpath = XPathFactory.newInstance().newXPath();
-        xpath.setNamespaceContext(new NamespaceContext() {
-                public String getNamespaceURI(String prefix) {
-                    if (prefix.equals("script")) {
-                        return "http://www.ncpdp.org/schema/SCRIPT";
-                    }
-                    return XMLConstants.NULL_NS_URI;
-                }
-                public String getPrefix(String namespaceURI) {
-                    if (namespaceURI.equals( "http://www.ncpdp.org/schema/SCRIPT")) {
-                        return "script";
-                    }
-                    return null;
-                }
-                public Iterator<String> getPrefixes(String namespaceURI) {
-                    List<String> list = new ArrayList<String>();
-                    if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
-                        list.add( "script");
-                    }
-                    return list.iterator();
-                }
-            });
+	XPath xpath = XPathFactory.newInstance().newXPath();
+	xpath.setNamespaceContext(new NamespaceContext() {
+	    public String getNamespaceURI(String prefix) {
+		if (prefix.equals("script")) {
+		    return "http://www.ncpdp.org/schema/SCRIPT";
+		}
+		return XMLConstants.NULL_NS_URI;
+	    }
+
+	    public String getPrefix(String namespaceURI) {
+		if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
+		    return "script";
+		}
+		return null;
+	    }
+
+	    public Iterator<String> getPrefixes(String namespaceURI) {
+		List<String> list = new ArrayList<String>();
+		if (namespaceURI.equals("http://www.ncpdp.org/schema/SCRIPT")) {
+		    list.add("script");
+		}
+		return list.iterator();
+	    }
+	});
 
         Config c = Context.getService(ConfigService.class).getConfig();
         String userpassword = c.getUser() + ":" + c.getPassword();
