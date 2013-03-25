@@ -1,17 +1,14 @@
 package org.openmrs.module.pdmp_query.web.controller;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.io.IOException;
-import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.ProtocolException;
-import java.net.URL;
-import java.text.DateFormat;
-import java.text.SimpleDateFormat;
-import java.text.ParseException;
 
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -34,10 +31,12 @@ import org.ncpdp.schema.script.NameType;
 import org.ncpdp.schema.script.OptionalPharmacyType;
 import org.ncpdp.schema.script.QuantityType;
 import org.ncpdp.schema.script.RxHistoryResponse;
-import org.openmrs.api.context.Context;
 import org.openmrs.Patient;
 import org.openmrs.Person;
-import org.openmrs.util.OpenmrsUtil;
+import org.openmrs.api.context.Context;
+import org.openmrs.module.pdmp_query.Config;
+import org.openmrs.module.pdmp_query.ConfigService;
+import org.openmrs.module.pdmp_query.Prescription;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -45,13 +44,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
-
-import org.openmrs.module.pdmp_query.Config;
-import org.openmrs.module.pdmp_query.ConfigService;
-import org.openmrs.module.pdmp_query.Prescription;
 
 
 /**
