@@ -15,10 +15,10 @@ package org.openmrs.module.pdmp_query;
 
 
 /**
- * Holds the bag of parameters that we store in the database.  There
- * should be one and only one row in the db, with a PK of 1.  If there
- * are others we'll ignore them.  The PK is useless but Hibernate
- * requires that you have one.
+ * Holds the bag of configuration parameters that we store in the
+ * database.  There should be one and only one row in the db, with a
+ * PK of 1.  If there are others we'll ignore them.  The PK is useless
+ * but Hibernate requires that you have one.
  */
 public class Config {
 
@@ -42,6 +42,10 @@ public class Config {
     }
 
 
+    /**
+     * The database primary key.  This will always be 1 since there is
+     * only one configuration row in the database.
+     */
     public int getId() {
         return id;
     }
@@ -50,6 +54,9 @@ public class Config {
         this.id = id;
     }
 
+    /**
+     * The PDMP's web service URL.
+     */
     public String getUrl() {
         return url;
     }
@@ -58,6 +65,9 @@ public class Config {
         this.url = url;
     }
 
+    /**
+     * The user ID used to log into the PDMP.
+     */
     public String getUser() {
         return user;
     }
@@ -66,6 +76,9 @@ public class Config {
         this.user = user;
     }
 
+    /**
+     * The password used to log into the PDMP.
+     */
     public String getPassword() {
         return password;
     }

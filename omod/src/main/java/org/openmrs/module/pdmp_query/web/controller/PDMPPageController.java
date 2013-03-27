@@ -45,7 +45,8 @@ import org.xml.sax.SAXException;
 
 
 /**
- * The main controller.
+ * User interface controller.  Requests prescription history from the
+ * PDMP and displays it in a tab on the patient dashboard.
  */
 @Controller
 public class PDMPPageController {

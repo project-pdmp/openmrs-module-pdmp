@@ -21,6 +21,10 @@ import org.openmrs.api.db.DAOException;
 import org.openmrs.module.pdmp_query.Config;
 
 
+/**
+ * Data Access Object service implementation.  Reads and writes the
+ * module configuration data using Hibernate.
+ */
 public class HibernateServiceDAO implements org.openmrs.module.pdmp_query.db.ServiceDAO {
 
     private SessionFactory sessionFactory;

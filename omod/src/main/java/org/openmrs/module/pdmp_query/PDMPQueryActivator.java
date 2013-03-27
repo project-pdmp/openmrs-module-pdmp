@@ -19,7 +19,7 @@ import org.apache.commons.logging.LogFactory;
 import org.openmrs.module.ModuleActivator;
 
 /**
- * This class contains the logic that is run every time this module is either started or stopped.
+ * Lifecycle logic (run when this module is either started or stopped).
  */
 public class PDMPQueryActivator implements ModuleActivator {
 	

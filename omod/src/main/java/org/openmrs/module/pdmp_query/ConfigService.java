@@ -17,6 +17,9 @@ import org.openmrs.api.APIException;
 import org.springframework.transaction.annotation.Transactional;
 
 
+/**
+ * Configuration service API definition.
+ */
 @Transactional
 public interface ConfigService extends org.openmrs.api.OpenmrsService {
     public void saveConfig(Config config) throws APIException;

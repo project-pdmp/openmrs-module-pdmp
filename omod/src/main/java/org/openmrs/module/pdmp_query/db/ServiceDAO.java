@@ -17,6 +17,9 @@ import org.openmrs.api.db.DAOException;
 import org.openmrs.module.pdmp_query.Config;
 
 
+/**
+ * Data Access Object service API definition.
+ */
 public interface ServiceDAO {
     public void saveConfig(Config config) throws DAOException;
     public Config getConfig() throws DAOException;

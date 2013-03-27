@@ -17,6 +17,10 @@ package org.openmrs.module.pdmp_query;
 import java.util.Date;
 
 
+/**
+ * Model prescription class used to pass data from the controller to
+ * the view.
+ */
 public class Prescription {
 
     private String prescriber;

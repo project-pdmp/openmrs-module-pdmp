@@ -29,7 +29,8 @@ import org.springframework.web.servlet.view.RedirectView;
 
 
 /**
- * The main controller.
+ * Admin interface controller.  Saves and loads the configuration
+ * data.
  */
 @Controller
 public class  PDMPQueryManageController {

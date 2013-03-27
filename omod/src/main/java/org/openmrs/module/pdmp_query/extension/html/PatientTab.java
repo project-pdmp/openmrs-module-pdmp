@@ -17,8 +17,8 @@ import org.openmrs.module.Extension;
 import org.openmrs.module.web.extension.PatientDashboardTabExt;
 
 /**
- * This class defines the links that will appear on the administration page under the
- * "pdmp_query.title" heading.
+ * Defines the links that will appear on the administration page under
+ * the "pdmp_query.title" heading.
  */
 public class PatientTab extends PatientDashboardTabExt {
 
