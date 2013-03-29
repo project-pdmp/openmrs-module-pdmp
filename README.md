@@ -6,6 +6,10 @@ Drug Monitoring Program system using Open Search to locate
 prescription information and return a standardized healthcare document
 format.
 
+This module works with the "spike" Ruby on Rails server - you can get
+the code for spike at https://github.com/project-pdmp/spike .
+
+
 Overview
 --------
 
